@@ -3,27 +3,60 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --bg-base: #040712;
+  --bg-elevated: #0a1224;
+  --surface: rgba(10, 18, 36, 0.68);
+  --surface-border: rgba(148, 163, 184, 0.2);
+  --text-primary: #e2e8f0;
+  --text-muted: #94a3b8;
+  --accent-cyan: #22d3ee;
+  --accent-emerald: #34d399;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  margin: 0;
+  color: var(--text-primary);
+  background:
+    radial-gradient(circle at 15% 15%, rgba(34, 211, 238, 0.16), transparent 45%),
+    radial-gradient(circle at 85% 0%, rgba(16, 185, 129, 0.14), transparent 42%),
+    linear-gradient(160deg, var(--bg-base) 0%, #061024 40%, var(--bg-elevated) 100%);
+  font-family: var(--font-sora), sans-serif;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: radial-gradient(circle at center, black 30%, transparent 88%);
+  z-index: -1;
+}
+
+.font-display {
+  font-family: var(--font-sora), sans-serif;
+  letter-spacing: -0.025em;
+}
+
+.font-data {
+  font-family: var(--font-ibm-plex-mono), monospace;
 }
 
 @layer utilities {
