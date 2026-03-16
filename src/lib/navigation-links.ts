@@ -5,6 +5,6 @@ export type NavigationLink = {
 
 export const navigationLinks: NavigationLink[] = [
   { label: "Skills", href: "#skills" },
-  { label: "Projekte", href: "#projekte" },
-  { label: "Ueber mich", href: "#ueber-mich" },
+  { label: "Projects", href: "#projects" },
+  { label: "About", href: "#about" },
 ];

@@ -45,6 +45,7 @@ The landing page should communicate engineering quality, data platform expertise
 ## UI/UX Requirements
 - Dark-first visual language with strong contrast.
 - Clean and intentional typography (no default generic styling).
+- Use readable 8-bit-inspired typography with distinct roles for display, UI, and data text.
 - Subtle motion only: fade/slide reveals, no distracting animations.
 - Responsive behavior for mobile, tablet, and desktop.
 - Keep the hero data visualization area prominent and reusable.

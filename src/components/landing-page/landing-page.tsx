@@ -22,7 +22,7 @@ export function LandingPage() {
           <HeroSection />
 
           <motion.section
-            id="ueber-mich"
+            id="about"
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
@@ -44,7 +44,7 @@ export function LandingPage() {
           </motion.section>
 
           <motion.section
-            id="kontakt"
+            id="contact"
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
@@ -59,10 +59,10 @@ export function LandingPage() {
                 Looking for a Data Engineer for your next platform build?
               </h2>
               <Link
-                href="mailto:hello@example.com"
-                className="w-fit rounded-full bg-cyan-300 px-6 py-3 text-sm font-semibold text-slate-950 transition-colors duration-200 hover:bg-emerald-300"
+                href="mailto:chris.mollzahn@gmail.com"
+                className="font-ui w-fit rounded-full bg-cyan-300 px-6 py-3 text-sm font-semibold text-slate-950 transition-colors duration-200 hover:bg-emerald-300"
               >
-                hello@example.com
+                chris.mollzahn@gmail.com
               </Link>
             </div>
           </motion.section>

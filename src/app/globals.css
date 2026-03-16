@@ -34,7 +34,8 @@ body {
     radial-gradient(circle at 15% 15%, rgba(34, 211, 238, 0.16), transparent 45%),
     radial-gradient(circle at 85% 0%, rgba(16, 185, 129, 0.14), transparent 42%),
     linear-gradient(160deg, var(--bg-base) 0%, #061024 40%, var(--bg-elevated) 100%);
-  font-family: var(--font-sora), sans-serif;
+  font-family: var(--font-pixelify-sans), sans-serif;
+  text-rendering: optimizeLegibility;
 }
 
 body::before {
@@ -51,12 +52,19 @@ body::before {
 }
 
 .font-display {
-  font-family: var(--font-sora), sans-serif;
-  letter-spacing: -0.025em;
+  font-family: var(--font-press-start-2p), monospace;
+  letter-spacing: 0.03em;
+  line-height: 1.35;
+}
+
+.font-ui {
+  font-family: var(--font-pixelify-sans), sans-serif;
+  letter-spacing: 0.04em;
 }
 
 .font-data {
-  font-family: var(--font-ibm-plex-mono), monospace;
+  font-family: var(--font-vt323), monospace;
+  letter-spacing: 0.06em;
 }
 
 @layer utilities {

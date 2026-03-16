@@ -27,7 +27,7 @@ export function HeroSection() {
           data engineer portfolio
         </p>
 
-        <h1 className="font-display mt-4 max-w-2xl text-4xl font-semibold leading-tight text-slate-100 sm:text-5xl lg:text-6xl">
+        <h1 className="font-display mt-4 max-w-2xl text-3xl font-semibold text-slate-100 sm:text-4xl lg:text-5xl">
           Build robust pipelines that turn raw data into reliable decisions.
         </h1>
 
@@ -49,26 +49,26 @@ export function HeroSection() {
 
         <div className="mt-10 flex flex-wrap gap-3">
           <Link
-            href="#projekte"
-            className="rounded-full bg-gradient-to-r from-cyan-300 to-emerald-300 px-6 py-3 text-sm font-semibold text-slate-950 transition-transform duration-200 hover:scale-[1.02]"
+            href="#projects"
+            className="font-ui rounded-full bg-gradient-to-r from-cyan-300 to-emerald-300 px-6 py-3 text-sm font-semibold text-slate-950 transition-transform duration-200 hover:scale-[1.02]"
           >
-            Projekte ansehen
+            View Projects
           </Link>
           <Link
-            href="#kontakt"
-            className="rounded-full border border-slate-500 px-6 py-3 text-sm font-semibold text-slate-100 transition-colors duration-200 hover:border-cyan-300 hover:text-cyan-200"
+            href="#contact"
+            className="font-ui rounded-full border border-slate-500 px-6 py-3 text-sm font-semibold text-slate-100 transition-colors duration-200 hover:border-cyan-300 hover:text-cyan-200"
           >
-            Gespraech starten
+            Start a Conversation
           </Link>
         </div>
 
-        <div id="projekte" className="mt-12 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div id="projects" className="mt-12 grid grid-cols-1 gap-3 sm:grid-cols-3">
           {highlightMetrics.map((metric) => (
             <article
               key={metric.label}
               className="rounded-2xl border border-slate-700/80 bg-slate-900/70 px-4 py-4"
             >
-              <p className="text-2xl font-semibold text-slate-100">{metric.value}</p>
+              <p className="font-ui text-2xl font-semibold text-slate-100">{metric.value}</p>
               <p className="mt-1 text-sm text-slate-400">{metric.label}</p>
             </article>
           ))}

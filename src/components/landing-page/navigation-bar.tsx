@@ -10,12 +10,12 @@ export function NavigationBar() {
       transition={{ duration: 0.5 }}
       className="sticky top-0 z-40"
     >
-      <nav className="mx-auto mt-4 flex w-[min(1100px,92%)] items-center justify-between rounded-2xl border border-slate-700/80 bg-slate-950/65 px-4 py-3 shadow-xl shadow-black/20 backdrop-blur md:px-6">
+      <nav className="font-ui mx-auto mt-4 flex w-[min(1100px,92%)] items-center justify-between rounded-2xl border border-slate-700/80 bg-slate-950/65 px-4 py-3 shadow-xl shadow-black/20 backdrop-blur md:px-6">
         <Link href="/" className="flex items-center gap-3 text-slate-100">
           <span className="rounded-lg bg-gradient-to-br from-cyan-400 to-emerald-300 px-2 py-1 text-sm font-bold text-slate-950">
             DE
           </span>
-          <span className="font-display text-sm font-semibold tracking-[0.12em] uppercase sm:text-base">
+          <span className="font-ui text-sm font-semibold tracking-[0.12em] uppercase sm:text-base">
             data engineer
           </span>
         </Link>
@@ -34,10 +34,10 @@ export function NavigationBar() {
         </ul>
 
         <Link
-          href="#kontakt"
+          href="#contact"
           className="rounded-full border border-cyan-300/60 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-cyan-200 transition-colors duration-200 hover:bg-cyan-400/10"
         >
-          Kontakt
+          Contact
         </Link>
       </nav>
     </motion.header>
