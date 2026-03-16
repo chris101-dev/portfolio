@@ -10,22 +10,22 @@ export function NavigationBar() {
       transition={{ duration: 0.5 }}
       className="sticky top-0 z-40"
     >
-      <nav className="font-ui mx-auto mt-4 flex w-[min(1100px,92%)] items-center justify-between rounded-2xl border border-slate-700/80 bg-slate-950/65 px-4 py-3 shadow-xl shadow-black/20 backdrop-blur md:px-6">
-        <Link href="/" className="flex items-center gap-3 text-slate-100">
-          <span className="rounded-lg bg-gradient-to-br from-cyan-400 to-emerald-300 px-2 py-1 text-sm font-bold text-slate-950">
+      <nav className="terminal-panel font-ui mx-auto mt-4 flex w-[min(1100px,92%)] items-center justify-between px-4 py-3 backdrop-blur md:px-6">
+        <Link href="/" className="flex items-center gap-3 text-white">
+          <span className="terminal-chip px-2 py-1 text-sm font-bold text-cyan-200">
             DE
           </span>
-          <span className="font-ui text-sm font-semibold tracking-[0.12em] uppercase sm:text-base">
+          <span className="font-ui text-sm font-semibold tracking-[0.12em] uppercase text-white sm:text-base">
             data engineer
           </span>
         </Link>
 
-        <ul className="hidden items-center gap-7 text-sm text-slate-300 md:flex">
+        <ul className="hidden items-center gap-7 text-sm text-white/75 md:flex">
           {navigationLinks.map((link) => (
             <li key={link.href}>
               <Link
                 href={link.href}
-                className="transition-colors duration-200 hover:text-cyan-300"
+                className="transition-colors duration-200 hover:text-cyan-200"
               >
                 {link.label}
               </Link>
@@ -35,7 +35,7 @@ export function NavigationBar() {
 
         <Link
           href="#contact"
-          className="rounded-full border border-cyan-300/60 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-cyan-200 transition-colors duration-200 hover:bg-cyan-400/10"
+          className="terminal-button terminal-button-green px-4 py-2 text-xs font-semibold uppercase tracking-widest"
         >
           Contact
         </Link>

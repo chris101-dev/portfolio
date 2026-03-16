@@ -1,60 +1,148 @@
-import { motion } from "framer-motion";
+"use client";
 
-const barHeights = [24, 38, 54, 46, 72, 60, 88, 76, 66, 92, 80, 70];
+import { useEffect, useMemo } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { DataQualityVisualizationProject } from "./data-quality-visualization-project";
+import { DummyVisualizationProject } from "./dummy-visualization-project";
+import { LiveCandlestickChart } from "./live-candlestick-chart";
+import { getQualityScoringRules } from "./quality-rules";
+import { useBinanceKlineFeed } from "./use-binance-kline-feed";
+import {
+  defaultVisualizationProjectId,
+  visualizationProjects,
+} from "./visualization-mock";
 
 export function VisualizationPlaceholder() {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+  const binanceFeed = useBinanceKlineFeed();
+
+  const selectedProjectId = searchParams.get("project");
+
+  const activeProject = useMemo(() => {
+    return (
+      visualizationProjects.find((project) => project.id === selectedProjectId) ??
+      visualizationProjects.find(
+        (project) => project.id === defaultVisualizationProjectId,
+      ) ??
+      visualizationProjects[0]
+    );
+  }, [selectedProjectId]);
+
+  const activeQualityRules = useMemo(
+    () => getQualityScoringRules(activeProject.qualityRulePresetId),
+    [activeProject.qualityRulePresetId],
+  );
+
+  useEffect(() => {
+    if (!selectedProjectId) {
+      return;
+    }
+
+    const isKnownProject = visualizationProjects.some(
+      (project) => project.id === selectedProjectId,
+    );
+
+    if (isKnownProject) {
+      return;
+    }
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set("project", defaultVisualizationProjectId);
+    router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false });
+  }, [pathname, router, searchParams, selectedProjectId]);
+
+  const handleProjectSwitch = (projectId: string) => {
+    if (projectId === activeProject.id) {
+      return;
+    }
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set("project", projectId);
+    router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false });
+  };
+
   return (
     <section
       aria-label="Data visualization placeholder"
-      className="rounded-3xl border border-slate-700/80 bg-slate-950/65 p-5 shadow-2xl shadow-cyan-500/10 backdrop-blur"
+      className="terminal-panel backdrop-blur"
     >
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="font-data text-xs uppercase tracking-[0.28em] text-cyan-300/80">
-            Interactive Data Layer
-          </p>
-          <h2 className="mt-1 text-lg font-semibold text-slate-100">
-            Pipeline Throughput Monitor
-          </h2>
-        </div>
-        <span className="rounded-full border border-emerald-400/30 bg-emerald-400/15 px-3 py-1 text-xs font-medium text-emerald-200">
-          Live Slot
-        </span>
-      </div>
+      <div className="mx-2 my-1 space-y-5">
+        <div className="terminal-panel-soft mx-1 px-4 py-4 md:px-5">
+          <label
+            htmlFor="visualization-project-select"
+            className="font-data block text-[10px] tracking-[0.22em] text-white/65"
+          >
+            Project Selection
+          </label>
 
-      <div className="rounded-2xl border border-slate-700/70 bg-slate-900/80 p-4">
-        <div className="grid h-44 grid-cols-12 items-end gap-2">
-          {barHeights.map((height, index) => (
-            <motion.div
-              key={`${height}-${index}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + index * 0.04, duration: 0.35 }}
-              className="h-full"
+          <div className="relative mt-3">
+            <select
+              id="visualization-project-select"
+              value={activeProject.id}
+              onChange={(event) => handleProjectSwitch(event.target.value)}
+              className="terminal-button terminal-button-static font-ui h-12 w-full appearance-none border-white/20 bg-black/75 px-4 pr-12 text-xs font-semibold text-white"
             >
-              <motion.div
-                initial={{ height: "12%" }}
-                animate={{ height: `${height}%` }}
-                transition={{ delay: 0.2 + index * 0.04, duration: 0.8 }}
-                className="h-full w-full rounded-t-md bg-gradient-to-t from-cyan-500/40 to-emerald-300/90"
-              />
-            </motion.div>
-          ))}
+              {visualizationProjects.map((project) => {
+                const optionText = `${project.label} - ${project.status}`;
+                return (
+                  <option key={project.id} value={project.id}>
+                    {optionText}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
         </div>
 
-        <div className="mt-4 grid gap-2 text-xs text-slate-300 sm:grid-cols-3">
-          <article className="rounded-lg border border-slate-700/70 bg-slate-900/70 px-3 py-2">
-            <p className="font-data uppercase tracking-wider text-slate-400">source</p>
-            <p className="mt-1">API + Data Lake</p>
-          </article>
-          <article className="rounded-lg border border-slate-700/70 bg-slate-900/70 px-3 py-2">
-            <p className="font-data uppercase tracking-wider text-slate-400">processing</p>
-            <p className="mt-1">Spark + dbt + Airflow</p>
-          </article>
-          <article className="rounded-lg border border-slate-700/70 bg-slate-900/70 px-3 py-2">
-            <p className="font-data uppercase tracking-wider text-slate-400">output</p>
-            <p className="mt-1">Warehouse + BI Layer</p>
-          </article>
+        <div className="terminal-panel-soft mx-1 flex flex-col items-start gap-4 px-4 py-4 md:px-5">
+          <div>
+            <p className="font-data text-xs tracking-[0.28em] text-cyan-300/90">
+              Interactive Data Layer
+            </p>
+            <h2 className="font-ui mt-2 text-lg font-semibold text-white">
+              {activeProject.title}
+            </h2>
+          </div>
+          <span className="terminal-chip font-ui px-3 py-1 text-xs font-medium text-white">
+            {activeProject.status}
+          </span>
+        </div>
+
+        {/* Shared feed stays mounted so project switches reuse the same websocket data. */}
+        {activeProject.type === "live" ? (
+          <LiveCandlestickChart
+            key={activeProject.id}
+            symbol={binanceFeed.symbol}
+            interval={binanceFeed.interval}
+            feedState={binanceFeed.feedState}
+            errorText={binanceFeed.errorText}
+            lastPrice={binanceFeed.lastPrice}
+            candles={binanceFeed.candles}
+          />
+        ) : activeProject.type === "quality" ? (
+          <DataQualityVisualizationProject
+            key={activeProject.id}
+            symbol={binanceFeed.symbol}
+            interval={binanceFeed.interval}
+            feedState={binanceFeed.feedState}
+            candles={binanceFeed.candles}
+            rules={activeQualityRules}
+          />
+        ) : (
+          <DummyVisualizationProject key={activeProject.id} project={activeProject} />
+        )}
+
+        <div className="terminal-panel-soft px-5 py-5">
+          <div className="grid gap-3 text-xs text-white/80">
+            {activeProject.pipelineStages.map((stage) => (
+              <article key={stage.id} className="terminal-panel-soft px-4 py-3">
+                <p className="font-data tracking-wider text-white/55">{stage.label}</p>
+                <p className="mt-2">{stage.value}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </div>
     </section>

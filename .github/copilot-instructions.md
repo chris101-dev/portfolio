@@ -10,6 +10,7 @@ The landing page should communicate engineering quality, data platform expertise
 - TypeScript
 - Tailwind CSS
 - Framer Motion
+- TradingView Lightweight Charts
 
 ## Naming Convention
 - Use kebab-case for files and folders.
@@ -26,7 +27,14 @@ The landing page should communicate engineering quality, data platform expertise
   - landing-page.tsx
   - navigation-bar.tsx
   - hero-section.tsx
+  - terminal-typed-block.tsx
 - src/modules/data-visualization
+  - data-quality-visualization-project.tsx
+  - dummy-visualization-project.tsx
+  - live-candlestick-chart.tsx
+  - quality-rules.ts
+  - use-binance-kline-feed.ts
+  - visualization-mock.ts
   - visualization-placeholder.tsx
 - src/lib
   - navigation-links.ts
@@ -36,16 +44,40 @@ The landing page should communicate engineering quality, data platform expertise
   - Top navigation with section anchors and contact CTA.
 - src/components/landing-page/hero-section.tsx
   - Headline, value proposition, skill tags, KPIs, and hero CTAs.
+- src/components/landing-page/terminal-typed-block.tsx
+  - Terminal-style typed intro block with fixed-duration typing and cursor behavior.
 - src/modules/data-visualization/visualization-placeholder.tsx
-  - Placeholder container for future interactive charts.
-  - Keep this module swappable so D3/Recharts/Vega-Lite can be integrated later.
+  - Visualization shell and layout block shown in the hero.
+  - Hosts project dropdown, URL-based project selection, and supporting stage cards.
+- src/modules/data-visualization/use-binance-kline-feed.ts
+  - Shared Binance feed hook used by multiple visualization projects.
+  - Loads initial candles and streams kline updates via WebSocket.
+- src/modules/data-visualization/live-candlestick-chart.tsx
+  - Renders TradingView Lightweight Charts candlesticks.
+  - Visualizes live project data from the shared Binance feed.
+- src/modules/data-visualization/data-quality-visualization-project.tsx
+  - Computes and visualizes freshness, gap, duplicate, and OHLC validity checks.
+  - Applies configurable quality thresholds from a shared rules module.
+  - Uses the same shared Binance feed as the live chart project.
+- src/modules/data-visualization/quality-rules.ts
+  - Defines configurable quality thresholds, score penalties, and timeline settings.
+  - Exposes default presets used by quality-focused visualization projects.
+- src/modules/data-visualization/dummy-visualization-project.tsx
+  - Renders placeholder visuals for project slots that are not implemented yet.
+- src/modules/data-visualization/visualization-mock.ts
+  - Central project registry with labels, status, summaries, and stage metadata.
+  - Includes one live project, one quality project, and placeholder entries for upcoming projects.
+  - Holds per-project quality rule preset mappings.
+  - Keep sample data separated from rendering logic for easy replacement.
 - src/components/landing-page/landing-page.tsx
   - Composes all landing sections and motion timing.
 
 ## UI/UX Requirements
 - Dark-first visual language with strong contrast.
 - Clean and intentional typography (no default generic styling).
-- Use readable 8-bit-inspired typography with distinct roles for display, UI, and data text.
+- Favor a terminal-inspired aesthetic: black background, white typography, and restrained accent colors.
+- Use clear monospace typography across hero and UI for terminal consistency.
+- Prefer square panels with hard diagonal drop-shadows for an analog monitor feel.
 - Subtle motion only: fade/slide reveals, no distracting animations.
 - Responsive behavior for mobile, tablet, and desktop.
 - Keep the hero data visualization area prominent and reusable.

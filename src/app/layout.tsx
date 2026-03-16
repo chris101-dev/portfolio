@@ -1,23 +1,11 @@
 import type { Metadata } from "next";
-import { Pixelify_Sans, Press_Start_2P, VT323 } from "next/font/google";
+import { IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const pixelifySans = Pixelify_Sans({
+const ibmPlexMono = IBM_Plex_Mono({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-pixelify-sans",
-});
-
-const pressStart2P = Press_Start_2P({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-press-start-2p",
-});
-
-const vt323 = VT323({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-vt323",
+  weight: ["400", "500", "600"],
+  variable: "--font-ibm-plex-mono",
 });
 
 export const metadata: Metadata = {
@@ -33,9 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${pixelifySans.variable} ${pressStart2P.variable} ${vt323.variable} bg-slate-950 text-slate-100 antialiased`}
-      >
+      <body className={`${ibmPlexMono.variable} bg-black text-white antialiased`}>
         {children}
       </body>
     </html>
