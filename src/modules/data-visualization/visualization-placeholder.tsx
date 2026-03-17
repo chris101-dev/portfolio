@@ -82,7 +82,7 @@ export function VisualizationPlaceholder() {
               id="visualization-project-select"
               value={activeProject.id}
               onChange={(event) => handleProjectSwitch(event.target.value)}
-              className="terminal-select terminal-button terminal-button-static font-ui h-12 w-full appearance-none border-white bg-black/70 px-4 pr-12 text-xs font-semibold text-white"
+              className="terminal-select terminal-button terminal-button-static font-ui h-12 w-full appearance-none bg-black/70 px-4 pr-12 text-xs font-semibold text-white"
             >
               {visualizationProjects.map((project) => {
                 const optionText = `${project.label} - ${project.status}`;

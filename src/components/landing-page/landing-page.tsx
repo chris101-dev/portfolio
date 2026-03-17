@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { NavigationBar } from "./navigation-bar";
 import { HeroSection } from "./hero-section";
+import { RainbowShadowRuntime } from "./rainbow-shadow-runtime";
 
 export function LandingPage() {
   return (
@@ -12,11 +13,12 @@ export function LandingPage() {
         aria-hidden
         className="pointer-events-none absolute inset-0 z-0"
       >
-        <div className="absolute left-[-10rem] top-24 h-80 w-80 bg-cyan-300/8 blur-3xl" />
-        <div className="absolute right-[-8rem] top-[-4rem] h-80 w-80 bg-emerald-300/8 blur-3xl" />
+        <div className="absolute left-[-10rem] top-24 h-80 w-80 bg-white/8 blur-3xl" />
+        <div className="absolute right-[-8rem] top-[-4rem] h-80 w-80 bg-white/8 blur-3xl" />
       </div>
 
       <div className="relative z-10">
+        <RainbowShadowRuntime />
         <NavigationBar />
         <main className="space-y-12 pb-20">
           <HeroSection />

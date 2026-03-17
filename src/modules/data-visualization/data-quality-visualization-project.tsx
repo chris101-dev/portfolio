@@ -524,7 +524,7 @@ export function DataQualityVisualizationProject({
                 <span
                   className={`terminal-chip px-2 py-1 text-[10px] font-semibold ${
                     check.passed
-                      ? "border-white bg-emerald-300/10 text-emerald-200"
+                      ? "bg-emerald-300/10 text-emerald-200"
                       : severityBadgeClass(check.severity)
                   }`}
                 >

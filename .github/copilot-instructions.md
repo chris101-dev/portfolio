@@ -27,6 +27,7 @@ The landing page should communicate engineering quality, data platform expertise
   - landing-page.tsx
   - navigation-bar.tsx
   - hero-section.tsx
+  - rainbow-shadow-runtime.tsx
   - terminal-typed-block.tsx
 - src/modules/data-visualization
   - data-quality-visualization-project.tsx
@@ -38,6 +39,7 @@ The landing page should communicate engineering quality, data platform expertise
   - visualization-placeholder.tsx
 - src/lib
   - navigation-links.ts
+  - pastel-rainbow-colors.ts
 
 ## Module Responsibilities
 - src/components/landing-page/navigation-bar.tsx
@@ -46,6 +48,9 @@ The landing page should communicate engineering quality, data platform expertise
   - Headline, value proposition, skill tags, KPIs, and hero CTAs.
 - src/components/landing-page/terminal-typed-block.tsx
   - Terminal-style typed intro block with fixed-duration typing and cursor behavior.
+- src/components/landing-page/rainbow-shadow-runtime.tsx
+  - Assigns per-block random pastel colors on mount for terminal shadow blocks.
+  - Applies block-local border, shadow, and text coloring without cross-block coupling.
 - src/modules/data-visualization/visualization-placeholder.tsx
   - Visualization shell and layout block shown in the hero.
   - Hosts project dropdown, URL-based project selection, and supporting stage cards.
@@ -69,6 +74,8 @@ The landing page should communicate engineering quality, data platform expertise
   - Includes one live project, one quality project, and placeholder entries for upcoming projects.
   - Holds per-project quality rule preset mappings.
   - Keep sample data separated from rendering logic for easy replacement.
+- src/lib/pastel-rainbow-colors.ts
+  - Stores reusable pastel rainbow color constants for runtime block styling.
 - src/components/landing-page/landing-page.tsx
   - Composes all landing sections and motion timing.
 
