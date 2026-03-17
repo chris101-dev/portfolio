@@ -21,7 +21,7 @@ const typedLines: TypedLine[] = [
     id: "summary",
     as: "p",
     text: "I design and operate scalable data platforms across ingestion, transformation, orchestration, and observability.",
-    className: "max-w-2xl text-base leading-relaxed text-white/80 sm:text-lg",
+    className: "max-w-2xl text-base leading-relaxed text-white sm:text-lg",
   },
 ];
 
@@ -74,7 +74,7 @@ export function TerminalTypedBlock() {
     <div>
       <div
         aria-hidden="true"
-        className="mb-5 h-px w-full bg-emerald-300/90"
+        className="mb-5 h-px w-full bg-white"
       />
 
       <div className="space-y-4">

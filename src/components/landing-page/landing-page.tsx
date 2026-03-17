@@ -18,7 +18,7 @@ export function LandingPage() {
 
       <div className="relative z-10">
         <NavigationBar />
-        <main>
+        <main className="space-y-12 pb-20">
           <HeroSection />
 
           <motion.section
@@ -27,7 +27,7 @@ export function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.5 }}
-            className="terminal-panel mx-auto mb-12 w-[min(1100px,92%)] px-6 py-8 backdrop-blur sm:px-8"
+            className="terminal-panel mx-auto w-[min(1120px,92%)] p-6 backdrop-blur"
           >
             <p className="font-data text-xs tracking-[0.25em] text-emerald-300/90">
               about this portfolio
@@ -35,7 +35,7 @@ export function LandingPage() {
             <h2 className="font-display mt-3 text-2xl font-semibold text-white sm:text-3xl">
               Focused on resilient data systems and measurable business impact.
             </h2>
-            <p className="mt-4 max-w-3xl text-white/78">
+            <p className="mt-4 max-w-3xl text-white">
               This landing page is intentionally modular. The visualization area
               is prepared as a plug-in slot so D3, Recharts, Vega-Lite, or a
               custom real-time chart can be integrated without changing the hero
@@ -49,7 +49,7 @@ export function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.5 }}
-            className="terminal-panel mx-auto mb-20 w-[min(1100px,92%)] border-cyan-300/55 bg-gradient-to-r from-black/90 to-zinc-950/95 px-6 py-8 sm:px-8"
+            className="terminal-panel mx-auto w-[min(1120px,92%)] p-6"
           >
             <p className="font-data text-xs tracking-[0.3em] text-cyan-300/95">
               contact
@@ -68,7 +68,7 @@ export function LandingPage() {
           </motion.section>
         </main>
 
-        <footer className="mx-auto w-[min(1100px,92%)] border-t border-white/12 py-8 text-sm text-white/55">
+        <footer className="mx-auto w-[min(1120px,92%)] border-t border-white py-8 text-sm text-white">
           <p>© {new Date().getFullYear()} Chris Mollzahn</p>
         </footer>
       </div>

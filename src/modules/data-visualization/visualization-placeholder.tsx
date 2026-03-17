@@ -66,13 +66,13 @@ export function VisualizationPlaceholder() {
   return (
     <section
       aria-label="Data visualization placeholder"
-      className="terminal-panel backdrop-blur"
+      className="backdrop-blur"
     >
-      <div className="mx-2 my-1 space-y-5">
-        <div className="terminal-panel-soft mx-1 px-4 py-4 md:px-5">
+      <div className="space-y-4 p-5">
+        <div className="terminal-panel-soft p-5">
           <label
             htmlFor="visualization-project-select"
-            className="font-data block text-[10px] tracking-[0.22em] text-white/65"
+            className="font-data block text-[10px] tracking-[0.22em] text-white"
           >
             Project Selection
           </label>
@@ -82,7 +82,7 @@ export function VisualizationPlaceholder() {
               id="visualization-project-select"
               value={activeProject.id}
               onChange={(event) => handleProjectSwitch(event.target.value)}
-              className="terminal-button terminal-button-static font-ui h-12 w-full appearance-none border-white/20 bg-black/75 px-4 pr-12 text-xs font-semibold text-white"
+              className="terminal-select terminal-button terminal-button-static font-ui h-12 w-full appearance-none border-white bg-black/70 px-4 pr-12 text-xs font-semibold text-white"
             >
               {visualizationProjects.map((project) => {
                 const optionText = `${project.label} - ${project.status}`;
@@ -96,7 +96,7 @@ export function VisualizationPlaceholder() {
           </div>
         </div>
 
-        <div className="terminal-panel-soft mx-1 flex flex-col items-start gap-4 px-4 py-4 md:px-5">
+        <div className="terminal-panel-soft flex flex-col items-start gap-3 p-5">
           <div>
             <p className="font-data text-xs tracking-[0.28em] text-cyan-300/90">
               Interactive Data Layer
@@ -134,11 +134,11 @@ export function VisualizationPlaceholder() {
           <DummyVisualizationProject key={activeProject.id} project={activeProject} />
         )}
 
-        <div className="terminal-panel-soft px-5 py-5">
-          <div className="grid gap-3 text-xs text-white/80">
+        <div className="terminal-panel-soft p-5">
+          <div className="grid gap-3 text-xs text-white">
             {activeProject.pipelineStages.map((stage) => (
-              <article key={stage.id} className="terminal-panel-soft px-4 py-3">
-                <p className="font-data tracking-wider text-white/55">{stage.label}</p>
+              <article key={stage.id} className="terminal-panel-soft p-4">
+                <p className="font-data tracking-wider text-white">{stage.label}</p>
                 <p className="mt-2">{stage.value}</p>
               </article>
             ))}

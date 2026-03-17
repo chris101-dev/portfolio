@@ -10,7 +10,7 @@ export function NavigationBar() {
       transition={{ duration: 0.5 }}
       className="sticky top-0 z-40"
     >
-      <nav className="terminal-panel font-ui mx-auto mt-4 flex w-[min(1100px,92%)] items-center justify-between px-4 py-3 backdrop-blur md:px-6">
+      <nav className="terminal-panel font-ui mx-auto mt-4 flex w-[min(1120px,92%)] items-center justify-between px-5 py-4 backdrop-blur">
         <Link href="/" className="flex items-center gap-3 text-white">
           <span className="terminal-chip px-2 py-1 text-sm font-bold text-cyan-200">
             DE
@@ -20,7 +20,7 @@ export function NavigationBar() {
           </span>
         </Link>
 
-        <ul className="hidden items-center gap-7 text-sm text-white/75 md:flex">
+        <ul className="hidden items-center gap-7 text-sm text-white md:flex">
           {navigationLinks.map((link) => (
             <li key={link.href}>
               <Link

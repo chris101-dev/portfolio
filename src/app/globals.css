@@ -5,10 +5,10 @@
 :root {
   --bg-base: #000000;
   --bg-elevated: #050505;
-  --surface: rgba(10, 10, 10, 0.78);
+  --surface: rgba(10, 10, 10, 0.7);
   --surface-border: rgba(255, 255, 255, 0.14);
   --text-primary: #f5f5f5;
-  --text-muted: #b6b6b6;
+  --text-muted: #ffffff;
   --accent-cyan: #67e8f9;
   --accent-green: #4ade80;
 }
@@ -61,7 +61,19 @@ body::after {
     radial-gradient(circle at 50% 118%, rgba(74, 222, 128, 0.06), transparent 36%),
     radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.8) 100%);
   opacity: 0.3;
+  will-change: transform;
+  animation: ambient-background-drift 24s ease-in-out infinite alternate;
   z-index: -1;
+}
+
+@keyframes ambient-background-drift {
+  0% {
+    transform: translate3d(-0.9%, -0.6%, 0) scale(1.008);
+  }
+
+  100% {
+    transform: translate3d(0.9%, 0.6%, 0) scale(1.02);
+  }
 }
 
 .font-display {
@@ -84,7 +96,7 @@ body::after {
 .terminal-cursor-trailing {
   display: inline-block;
   margin-left: 0.18rem;
-  color: var(--accent-green);
+  color: #ffffff;
   font-weight: 600;
   animation: terminal-blink 1.15s steps(1, end) infinite;
 }
@@ -102,39 +114,58 @@ body::after {
 }
 
 @layer components {
+  .terminal-select {
+    color-scheme: dark;
+  }
+
+  .terminal-select option {
+    background-color: #000000;
+    color: #ffffff;
+  }
+
+  .terminal-select option:checked {
+    background-color: #ffffff;
+    color: #000000;
+  }
+
+  .terminal-select option:hover,
+  .terminal-select option:focus,
+  .terminal-select option:active {
+    background-color: #4ade80;
+    color: #000000;
+  }
+
   .terminal-panel {
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    --terminal-border-color: #ffffff;
+    border: 1px solid var(--terminal-border-color);
     border-radius: 0;
-    background: rgba(0, 0, 0, 0.84);
-    box-shadow:
-      4px 4px 0 rgba(255, 255, 255, 0.14),
-      8px 8px 0 rgba(103, 232, 249, 0.1);
+    background: rgba(0, 0, 0, 0.7);
+    box-shadow: 6px 6px 0 var(--terminal-border-color);
   }
 
   .terminal-panel-soft {
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    --terminal-border-color: #ffffff;
+    border: 1px solid var(--terminal-border-color);
     border-radius: 0;
-    background: rgba(0, 0, 0, 0.72);
-    box-shadow:
-      3px 3px 0 rgba(255, 255, 255, 0.12),
-      6px 6px 0 rgba(74, 222, 128, 0.08);
+    background: rgba(0, 0, 0, 0.7);
+    box-shadow: 5px 5px 0 var(--terminal-border-color);
   }
 
   .terminal-chip {
-    border: 1px solid rgba(255, 255, 255, 0.22);
+    --terminal-border-color: #ffffff;
+    border: 1px solid var(--terminal-border-color);
     border-radius: 0;
-    background: rgba(0, 0, 0, 0.85);
-    box-shadow: 2px 2px 0 rgba(255, 255, 255, 0.13);
+    background: rgba(0, 0, 0, 0.7);
+    box-shadow: 4px 4px 0 var(--terminal-border-color);
   }
 
   .terminal-button {
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    --terminal-border-color: #ffffff;
+    border: 1px solid var(--terminal-border-color);
     border-radius: 0;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.7);
     color: var(--text-primary);
-    box-shadow:
-      3px 3px 0 rgba(255, 255, 255, 0.16),
-      6px 6px 0 rgba(0, 0, 0, 0.62);
+    box-shadow: 5px 5px 0 var(--terminal-border-color);
     transition:
       transform 140ms ease,
       background-color 160ms ease,
@@ -147,17 +178,15 @@ body::after {
 
   .terminal-button:active {
     transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0 rgba(255, 255, 255, 0.2);
+    box-shadow: 3px 3px 0 var(--terminal-border-color);
   }
 
   .terminal-button-cyan {
-    border-color: rgba(103, 232, 249, 0.72);
-    background: rgba(103, 232, 249, 0.12);
+    background: rgba(0, 0, 0, 0.7);
   }
 
   .terminal-button-green {
-    border-color: rgba(74, 222, 128, 0.72);
-    background: rgba(74, 222, 128, 0.12);
+    background: rgba(0, 0, 0, 0.7);
   }
 
   .terminal-button-static,
@@ -167,9 +196,7 @@ body::after {
   }
 
   .terminal-button-static:active {
-    box-shadow:
-      3px 3px 0 rgba(255, 255, 255, 0.16),
-      6px 6px 0 rgba(0, 0, 0, 0.62);
+    box-shadow: 5px 5px 0 var(--terminal-border-color);
   }
 }
 

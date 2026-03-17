@@ -51,18 +51,18 @@ function feedStateLabel(state: FeedState): string {
 
 function feedStateClass(state: FeedState): string {
   if (state === "live") {
-    return "border-emerald-300/70 bg-emerald-300/12";
+    return "border-white bg-emerald-300/12";
   }
 
   if (state === "reconnecting") {
-    return "border-amber-300/70 bg-amber-300/12";
+    return "border-white bg-amber-300/12";
   }
 
   if (state === "error") {
-    return "border-rose-300/70 bg-rose-300/12";
+    return "border-white bg-rose-300/12";
   }
 
-  return "border-cyan-300/70 bg-cyan-300/12";
+  return "border-white bg-cyan-300/12";
 }
 
 export function LiveCandlestickChart({
@@ -203,9 +203,9 @@ export function LiveCandlestickChart({
   }, [visibleCandles]);
 
   return (
-    <div className="terminal-panel-soft py-5">
-      <div className="mb-4 flex flex-col items-start gap-3 px-5">
-        <p className="font-ui text-xs text-white/70">{subtitle}</p>
+    <div className="terminal-panel-soft p-5">
+      <div className="mb-4 flex flex-col items-start gap-3">
+        <p className="font-ui text-xs text-white">{subtitle}</p>
         <div
           className={`terminal-chip font-ui px-3 py-1 text-xs text-white ${feedStateClass(feedState)}`}
         >
@@ -215,7 +215,7 @@ export function LiveCandlestickChart({
 
       <div ref={chartContainerRef} className="h-[320px] w-full" />
 
-      <div className="mt-4 flex flex-col items-start gap-2 px-5 text-xs text-white/70">
+      <div className="mt-4 flex flex-col items-start gap-2 text-xs text-white">
         <p>{errorText || "Connected to shared Binance feed."}</p>
         <p className="font-ui text-cyan-200">
           Last: {lastPrice !== null ? lastPrice.toFixed(4) : "--"}

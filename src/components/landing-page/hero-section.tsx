@@ -12,7 +12,7 @@ const skillTags = [
 
 export function HeroSection() {
   return (
-    <section className="mx-auto flex w-[min(1120px,92%)] flex-col gap-12 pb-20 pt-14">
+    <section className="mx-auto flex w-[min(1120px,92%)] flex-col gap-8 pt-14">
       <motion.div
         initial={{ opacity: 0, y: 22 }}
         animate={{ opacity: 1, y: 0 }}
@@ -20,7 +20,7 @@ export function HeroSection() {
       >
         <TerminalTypedBlock />
 
-        <div id="skills" className="mt-8 flex flex-col gap-3">
+        <div id="skills" className="mt-8 flex flex-wrap gap-3">
           {skillTags.map((tag) => (
             <span
               key={tag}
@@ -42,7 +42,7 @@ export function HeroSection() {
           fallback={
             <section className="terminal-panel p-5">
               <div className="terminal-panel-soft px-5 py-10 text-center">
-                <p className="font-ui text-sm text-white/70">
+                <p className="font-ui text-sm text-white">
                   Loading visualization module...
                 </p>
               </div>

@@ -16,7 +16,7 @@ export function DummyVisualizationProject({
 
         <h3 className="font-ui text-xl font-semibold text-white">{project.title}</h3>
 
-        <p className="mx-auto max-w-xl text-sm text-white/70">{project.summary}</p>
+        <p className="mx-auto max-w-xl text-sm text-white">{project.summary}</p>
 
         <p className="font-ui text-xs text-cyan-200/90">
           This slot is intentionally empty and ready to be replaced.

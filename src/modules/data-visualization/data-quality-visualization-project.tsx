@@ -370,14 +370,14 @@ function qualityScoreColor(score: number): string {
 
 function severityBadgeClass(severity: SeverityLevel): string {
   if (severity === "info") {
-    return "border-emerald-300/60 bg-emerald-300/10 text-emerald-200";
+    return "border-white bg-emerald-300/10 text-emerald-200";
   }
 
   if (severity === "warn") {
-    return "border-amber-300/60 bg-amber-300/10 text-amber-200";
+    return "border-white bg-amber-300/10 text-amber-200";
   }
 
-  return "border-rose-300/60 bg-rose-300/10 text-rose-200";
+  return "border-white bg-rose-300/10 text-rose-200";
 }
 
 function timelineBarClass(score: number | null): string {
@@ -386,14 +386,14 @@ function timelineBarClass(score: number | null): string {
   }
 
   if (score >= 90) {
-    return "bg-emerald-300/95";
+    return "bg-emerald-300/90";
   }
 
   if (score >= 70) {
-    return "bg-amber-300/95";
+    return "bg-amber-300/90";
   }
 
-  return "bg-rose-300/95";
+  return "bg-rose-300/90";
 }
 
 function buildTimelineSlots(
@@ -433,9 +433,9 @@ export function DataQualityVisualizationProject({
   );
 
   return (
-    <div className="terminal-panel-soft py-5">
-      <div className="mb-4 flex flex-col items-start gap-3 px-5">
-        <p className="font-ui text-xs text-white/70">
+    <div className="terminal-panel-soft p-5">
+      <div className="mb-4 flex flex-col items-start gap-3">
+        <p className="font-ui text-xs text-white">
           {symbol} · {interval} · shared feed quality checks
         </p>
         <div className="terminal-chip font-ui px-3 py-1 text-xs text-white">
@@ -443,9 +443,9 @@ export function DataQualityVisualizationProject({
         </div>
       </div>
 
-      <div className="grid gap-3 px-5">
-        <article className="terminal-panel-soft px-4 py-3">
-          <p className="font-data text-[10px] tracking-wider text-white/55">quality score</p>
+      <div className="grid gap-3">
+        <article className="terminal-panel-soft p-4">
+          <p className="font-data text-[10px] tracking-wider text-white">quality score</p>
           <p
             className={`mt-2 font-ui text-2xl font-semibold ${qualityScoreColor(
               metrics.qualityScore,
@@ -455,34 +455,34 @@ export function DataQualityVisualizationProject({
           </p>
         </article>
 
-        <article className="terminal-panel-soft px-4 py-3">
-          <p className="font-data text-[10px] tracking-wider text-white/55">freshness lag</p>
+        <article className="terminal-panel-soft p-4">
+          <p className="font-data text-[10px] tracking-wider text-white">freshness lag</p>
           <p className="mt-2 font-ui text-2xl font-semibold text-white">
             {formatElapsed(metrics.freshnessSeconds)}
           </p>
         </article>
 
-        <article className="terminal-panel-soft px-4 py-3">
-          <p className="font-data text-[10px] tracking-wider text-white/55">missing intervals</p>
+        <article className="terminal-panel-soft p-4">
+          <p className="font-data text-[10px] tracking-wider text-white">missing intervals</p>
           <p className="mt-2 font-ui text-2xl font-semibold text-white">
             {metrics.missingIntervals}
           </p>
         </article>
 
-        <article className="terminal-panel-soft px-4 py-3">
-          <p className="font-data text-[10px] tracking-wider text-white/55">sample size</p>
+        <article className="terminal-panel-soft p-4">
+          <p className="font-data text-[10px] tracking-wider text-white">sample size</p>
           <p className="mt-2 font-ui text-2xl font-semibold text-white">
             {metrics.sampleSize}
           </p>
         </article>
       </div>
 
-      <article className="terminal-panel-soft mx-5 mt-4 px-4 py-4">
+      <article className="terminal-panel-soft mt-4 p-4">
         <p className="font-data text-[10px] tracking-wider text-cyan-300/90">
           Rolling Quality Score Timeline
         </p>
 
-        <div className="mt-3 border border-white/15 bg-black/45 p-2">
+        <div className="mt-3 border border-white bg-black/70 p-2">
           <div
             className="grid h-24 items-end gap-px"
             style={{
@@ -499,7 +499,7 @@ export function DataQualityVisualizationProject({
           </div>
         </div>
 
-        <div className="mt-2 flex flex-col items-start gap-1 text-[10px] text-white/55">
+        <div className="mt-2 flex flex-col items-start gap-1 text-[10px] text-white">
           <span>Oldest</span>
           <span>
             Filled: {filledTimelineSlotCount}/{timelineSlotCount} | Window: {rules.rollingWindowSize}
@@ -508,23 +508,23 @@ export function DataQualityVisualizationProject({
         </div>
       </article>
 
-      <div className="mt-4 grid gap-3 px-5">
-        <article className="terminal-panel-soft px-4 py-4">
+      <div className="mt-4 grid gap-3">
+        <article className="terminal-panel-soft p-4">
           <p className="font-data text-[10px] tracking-wider text-cyan-300/90">Check Matrix</p>
           <ul className="mt-3 space-y-2">
             {metrics.checks.map((check) => (
               <li
                 key={check.id}
-                className="terminal-panel-soft flex flex-col items-start gap-3 px-3 py-2"
+                className="terminal-panel-soft flex flex-col items-start gap-3 p-3"
               >
                 <div>
                   <p className="font-ui text-xs text-white">{check.label}</p>
-                  <p className="mt-1 text-[11px] text-white/60">{check.detail}</p>
+                  <p className="mt-1 text-[11px] text-white">{check.detail}</p>
                 </div>
                 <span
                   className={`terminal-chip px-2 py-1 text-[10px] font-semibold ${
                     check.passed
-                      ? "border-emerald-300/60 bg-emerald-300/10 text-emerald-200"
+                      ? "border-white bg-emerald-300/10 text-emerald-200"
                       : severityBadgeClass(check.severity)
                   }`}
                 >
@@ -535,7 +535,7 @@ export function DataQualityVisualizationProject({
           </ul>
         </article>
 
-        <article className="terminal-panel-soft px-4 py-4">
+        <article className="terminal-panel-soft p-4">
           <p className="font-data text-[10px] tracking-wider text-cyan-300/90">
             Recent Incidents
           </p>
@@ -546,11 +546,11 @@ export function DataQualityVisualizationProject({
               {metrics.incidents.slice(0, 6).map((incident) => (
                 <li
                   key={incident.id}
-                  className="terminal-panel-soft flex flex-col items-start gap-3 px-3 py-2 text-[11px]"
+                  className="terminal-panel-soft flex flex-col items-start gap-3 p-3 text-[11px]"
                 >
                   <div>
                     <p className="font-ui text-xs text-white">{incident.title}</p>
-                    <p className="mt-1 text-white/65">{incident.detail}</p>
+                    <p className="mt-1 text-white">{incident.detail}</p>
                   </div>
                   <span
                     className={`terminal-chip px-2 py-1 text-[10px] font-semibold ${severityBadgeClass(
