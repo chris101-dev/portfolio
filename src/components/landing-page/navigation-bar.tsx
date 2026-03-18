@@ -10,13 +10,13 @@ export function NavigationBar() {
       transition={{ duration: 0.5 }}
       className="sticky top-0 z-40"
     >
-      <nav className="terminal-panel font-ui mx-auto mt-4 flex w-[min(1120px,92%)] items-center justify-between px-5 py-4 backdrop-blur">
+      <nav className="terminal-panel terminal-panel-outer-triple-shadow font-ui mx-auto mt-4 flex w-[min(1120px,92%)] items-center justify-between px-5 py-4 backdrop-blur">
         <Link href="/" className="flex items-center gap-3 text-white">
           <span className="terminal-chip px-2 py-1 text-sm font-bold text-cyan-200">
-            DE
+            IT
           </span>
           <span className="font-ui text-sm font-semibold tracking-[0.12em] uppercase text-white sm:text-base">
-            data engineer
+            T-Shaped Engineer
           </span>
         </Link>
 

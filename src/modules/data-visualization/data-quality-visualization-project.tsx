@@ -433,7 +433,7 @@ export function DataQualityVisualizationProject({
   );
 
   return (
-    <div className="terminal-panel-soft p-5">
+    <div className="terminal-panel-soft terminal-panel-outer-triple-shadow p-5">
       <div className="mb-4 flex flex-col items-start gap-3">
         <p className="font-ui text-xs text-white">
           {symbol} · {interval} · shared feed quality checks
@@ -443,7 +443,7 @@ export function DataQualityVisualizationProject({
         </div>
       </div>
 
-      <div className="grid gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <article className="terminal-panel-soft p-4">
           <p className="font-data text-[10px] tracking-wider text-white">quality score</p>
           <p
@@ -511,7 +511,7 @@ export function DataQualityVisualizationProject({
       <div className="mt-4 grid gap-3">
         <article className="terminal-panel-soft p-4">
           <p className="font-data text-[10px] tracking-wider text-cyan-300/90">Check Matrix</p>
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
             {metrics.checks.map((check) => (
               <li
                 key={check.id}

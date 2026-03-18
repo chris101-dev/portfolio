@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 
-const TOTAL_TYPING_MS = 5000;
+const TOTAL_TYPING_MS = 6500;
+const HEADLINE_SUFFIX_DELAY_MS = 500;
+const SUMMARY_START_DELAY_MS = 200;
+const HEADLINE_BASE_TEXT =
+  "I build robust pipelines that turn raw data into reliable decisions.";
+const HEADLINE_SUFFIX_TEXT = "PS, and it looks good :)";
+const SUMMARY_TEXT =
+  "I bridge the gap between robust data architecture and high-performance web development. I design scalable data platforms and craft intuitive, responsive digital experiences.";
 
 type TypedLine = {
   id: string;
@@ -9,66 +16,135 @@ type TypedLine = {
   className: string;
 };
 
+type TypedState = {
+  headlineBaseLength: number;
+  headlineSuffixLength: number;
+  summaryLength: number;
+};
+
 const typedLines: TypedLine[] = [
   {
     id: "headline",
     as: "h1",
-    text: "Build robust pipelines that turn raw data into reliable decisions.",
+    text: `${HEADLINE_BASE_TEXT}${HEADLINE_SUFFIX_TEXT}`,
     className:
-      "font-display max-w-2xl text-3xl font-semibold text-white sm:text-4xl lg:text-5xl",
+      "font-display w-full text-3xl font-semibold text-white sm:text-4xl lg:text-5xl",
   },
   {
     id: "summary",
     as: "p",
-    text: "I design and operate scalable data platforms across ingestion, transformation, orchestration, and observability.",
-    className: "max-w-2xl text-base leading-relaxed text-white sm:text-lg",
+    text: SUMMARY_TEXT,
+    className: "w-full text-base leading-relaxed text-white sm:text-lg",
   },
 ];
 
-function toTypedLengths(lines: TypedLine[], visibleChars: number): number[] {
-  let remainingChars = visibleChars;
+const TOTAL_TYPED_CHARS =
+  HEADLINE_BASE_TEXT.length + HEADLINE_SUFFIX_TEXT.length + SUMMARY_TEXT.length;
+const TOTAL_PAUSE_MS = HEADLINE_SUFFIX_DELAY_MS + SUMMARY_START_DELAY_MS;
+const TYPING_WINDOW_MS = Math.max(1, TOTAL_TYPING_MS - TOTAL_PAUSE_MS);
 
-  return lines.map((line) => {
-    const typedCount = Math.min(Math.max(remainingChars, 0), line.text.length);
-    remainingChars -= line.text.length;
-    return typedCount;
-  });
+function toTypedState(elapsedMs: number): TypedState {
+  const charsPerMs = TOTAL_TYPED_CHARS / TYPING_WINDOW_MS;
+  let remainingMs = Math.max(0, elapsedMs);
+
+  let headlineBaseLength = 0;
+  let headlineSuffixLength = 0;
+  let summaryLength = 0;
+
+  const headlineBaseDurationMs = HEADLINE_BASE_TEXT.length / charsPerMs;
+  const headlineSuffixDurationMs = HEADLINE_SUFFIX_TEXT.length / charsPerMs;
+  const summaryDurationMs = SUMMARY_TEXT.length / charsPerMs;
+
+  if (remainingMs < headlineBaseDurationMs) {
+    headlineBaseLength = Math.floor(remainingMs * charsPerMs);
+    return { headlineBaseLength, headlineSuffixLength, summaryLength };
+  }
+
+  headlineBaseLength = HEADLINE_BASE_TEXT.length;
+  remainingMs -= headlineBaseDurationMs;
+
+  if (remainingMs < HEADLINE_SUFFIX_DELAY_MS) {
+    return { headlineBaseLength, headlineSuffixLength, summaryLength };
+  }
+
+  remainingMs -= HEADLINE_SUFFIX_DELAY_MS;
+
+  if (remainingMs < headlineSuffixDurationMs) {
+    headlineSuffixLength = Math.floor(remainingMs * charsPerMs);
+    return { headlineBaseLength, headlineSuffixLength, summaryLength };
+  }
+
+  headlineSuffixLength = HEADLINE_SUFFIX_TEXT.length;
+  remainingMs -= headlineSuffixDurationMs;
+
+  if (remainingMs < SUMMARY_START_DELAY_MS) {
+    return { headlineBaseLength, headlineSuffixLength, summaryLength };
+  }
+
+  remainingMs -= SUMMARY_START_DELAY_MS;
+
+  if (remainingMs < summaryDurationMs) {
+    summaryLength = Math.floor(remainingMs * charsPerMs);
+  } else {
+    summaryLength = SUMMARY_TEXT.length;
+  }
+
+  return { headlineBaseLength, headlineSuffixLength, summaryLength };
 }
 
-export function TerminalTypedBlock() {
-  const [visibleChars, setVisibleChars] = useState(0);
+const INITIAL_TYPED_STATE: TypedState = {
+  headlineBaseLength: 0,
+  headlineSuffixLength: 0,
+  summaryLength: 0,
+};
 
-  const totalChars = useMemo(
-    () => typedLines.reduce((sum, line) => sum + line.text.length, 0),
-    [],
-  );
+export function TerminalTypedBlock() {
+  const [typedState, setTypedState] = useState<TypedState>(INITIAL_TYPED_STATE);
 
   useEffect(() => {
     let rafId = 0;
     const startedAt = performance.now();
 
     const animate = (now: number) => {
-      const elapsed = now - startedAt;
-      const progress = Math.min(elapsed / TOTAL_TYPING_MS, 1);
-      setVisibleChars(Math.floor(totalChars * progress));
+      const elapsed = Math.min(now - startedAt, TOTAL_TYPING_MS);
+      setTypedState(toTypedState(elapsed));
 
-      if (progress < 1) {
+      if (elapsed < TOTAL_TYPING_MS) {
         rafId = requestAnimationFrame(animate);
       }
     };
 
     rafId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(rafId);
-  }, [totalChars]);
+  }, []);
 
-  const typedLengths = useMemo(
-    () => toTypedLengths(typedLines, visibleChars),
-    [visibleChars],
+  const typedHeadlineBase = useMemo(
+    () => HEADLINE_BASE_TEXT.slice(0, typedState.headlineBaseLength),
+    [typedState.headlineBaseLength],
   );
 
-  const activeLineIndex = typedLengths.findIndex(
-    (typedLength, index) => typedLength < typedLines[index].text.length,
+  const typedHeadlineSuffix = useMemo(
+    () => HEADLINE_SUFFIX_TEXT.slice(0, typedState.headlineSuffixLength),
+    [typedState.headlineSuffixLength],
   );
+
+  const typedHeadlineSuffixChars = useMemo(
+    () => typedHeadlineSuffix.split(""),
+    [typedHeadlineSuffix],
+  );
+
+  const typedSummary = useMemo(
+    () => SUMMARY_TEXT.slice(0, typedState.summaryLength),
+    [typedState.summaryLength],
+  );
+
+  const isHeadlineComplete =
+    typedState.headlineBaseLength === HEADLINE_BASE_TEXT.length &&
+    typedState.headlineSuffixLength === HEADLINE_SUFFIX_TEXT.length;
+
+  const activeCursorLineId = isHeadlineComplete && typedState.summaryLength > 0
+    ? "summary"
+    : "headline";
 
   return (
     <div>
@@ -78,23 +154,45 @@ export function TerminalTypedBlock() {
       />
 
       <div className="space-y-4">
-        {typedLines.map((line, index) => {
+        {typedLines.map((line) => {
           const Element = line.as;
-          const typedText = line.text.slice(0, typedLengths[index]);
-          const showCursor =
-            activeLineIndex === -1
-              ? index === typedLines.length - 1
-              : index === activeLineIndex;
+          const showCursor = activeCursorLineId === line.id;
 
           return (
             <Element key={line.id} className={`${line.className} relative`}>
               <span aria-hidden="true" className="invisible select-none">
-                {line.text}
+                {line.id === "headline" ? (
+                  <>
+                    {HEADLINE_BASE_TEXT}
+                    <br />
+                    {HEADLINE_SUFFIX_TEXT}
+                  </>
+                ) : (
+                  line.text
+                )}
                 _
               </span>
 
               <span aria-hidden="true" className="pointer-events-none absolute inset-0">
-                <span>{typedText}</span>
+                {line.id === "headline" ? (
+                  <>
+                    <span>{typedHeadlineBase}</span>
+                    {typedHeadlineSuffixChars.length > 0 && (
+                      <span className="block">
+                        {typedHeadlineSuffixChars.map((char, index) => (
+                          <span
+                            key={`headline-suffix-char-${index}`}
+                            className="terminal-sequence-row"
+                          >
+                            {char}
+                          </span>
+                        ))}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <span>{typedSummary}</span>
+                )}
                 <span
                   className={showCursor ? "terminal-cursor-trailing" : "terminal-cursor-trailing invisible"}
                 >
@@ -107,9 +205,10 @@ export function TerminalTypedBlock() {
       </div>
 
       <p className="sr-only">
-        Build robust pipelines that turn raw data into reliable decisions. I
-        design and operate scalable data platforms across ingestion,
-        transformation, orchestration, and observability.
+        I build robust pipelines that turn raw data into reliable decisions. PS, and it
+        looks good :) I bridge the gap between robust data architecture and
+        high-performance web development. I design scalable data platforms and
+        craft intuitive, responsive digital experiences.
       </p>
     </div>
   );

@@ -3,8 +3,9 @@
 import { useEffect } from "react";
 import { pastelRainbowColors } from "@/lib/pastel-rainbow-colors";
 
-const SHADOW_BLOCK_SELECTOR =
-  ".terminal-panel, .terminal-panel-soft, .terminal-chip, .terminal-button";
+const RAINBOW_BLOCK_SELECTOR =
+  ".terminal-panel, .terminal-panel-soft, .terminal-chip, .terminal-button, .terminal-sequence-row";
+const SEQUENCE_ROW_SELECTOR = ".terminal-sequence-row";
 
 const TEXT_ELEMENT_TAGS = new Set([
   "P",
@@ -51,7 +52,7 @@ function applyBlockTextColor(block: HTMLElement, textColor: string): void {
         return NodeFilter.FILTER_SKIP;
       }
 
-      if (node.matches(SHADOW_BLOCK_SELECTOR)) {
+      if (node.matches(RAINBOW_BLOCK_SELECTOR)) {
         return NodeFilter.FILTER_REJECT;
       }
 
@@ -83,8 +84,9 @@ function applyBlockTextColor(block: HTMLElement, textColor: string): void {
 function applyRainbowColor(
   block: HTMLElement,
   getNextColor: () => { hex: string; rgb: string },
+  force = false,
 ): void {
-  if (block.dataset.rainbowized === "1") {
+  if (!force && block.dataset.rainbowized === "1") {
     return;
   }
 
@@ -102,8 +104,9 @@ function applyRainbowToTree(
   root: ParentNode,
   getNextColor: () => { hex: string; rgb: string },
 ): void {
-  root.querySelectorAll<HTMLElement>(SHADOW_BLOCK_SELECTOR).forEach((block) => {
-    applyRainbowColor(block, getNextColor);
+  root.querySelectorAll<HTMLElement>(RAINBOW_BLOCK_SELECTOR).forEach((block) => {
+    const forceColorize = block.matches(SEQUENCE_ROW_SELECTOR);
+    applyRainbowColor(block, getNextColor, forceColorize);
   });
 }
 
@@ -121,13 +124,17 @@ export function RainbowShadowRuntime() {
             return;
           }
 
-          if (node.matches(SHADOW_BLOCK_SELECTOR)) {
-            applyRainbowColor(node, getNextColor);
+          if (node.matches(RAINBOW_BLOCK_SELECTOR)) {
+            const forceColorize = node.matches(SEQUENCE_ROW_SELECTOR);
+            applyRainbowColor(node, getNextColor, forceColorize);
           }
 
           node
-            .querySelectorAll<HTMLElement>(SHADOW_BLOCK_SELECTOR)
-            .forEach((block) => applyRainbowColor(block, getNextColor));
+            .querySelectorAll<HTMLElement>(RAINBOW_BLOCK_SELECTOR)
+            .forEach((block) => {
+              const forceColorize = block.matches(SEQUENCE_ROW_SELECTOR);
+              applyRainbowColor(block, getNextColor, forceColorize);
+            });
         });
       });
     });

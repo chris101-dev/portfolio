@@ -51,18 +51,18 @@ function feedStateLabel(state: FeedState): string {
 
 function feedStateClass(state: FeedState): string {
   if (state === "live") {
-    return "border-white bg-emerald-300/12";
+    return "bg-emerald-300/12";
   }
 
   if (state === "reconnecting") {
-    return "border-white bg-amber-300/12";
+    return "bg-amber-300/12";
   }
 
   if (state === "error") {
-    return "border-white bg-rose-300/12";
+    return "bg-rose-300/12";
   }
 
-  return "border-white bg-cyan-300/12";
+  return "bg-cyan-300/12";
 }
 
 export function LiveCandlestickChart({
@@ -203,7 +203,7 @@ export function LiveCandlestickChart({
   }, [visibleCandles]);
 
   return (
-    <div className="terminal-panel-soft p-5">
+    <div className="terminal-panel-soft terminal-panel-outer-triple-shadow p-5">
       <div className="mb-4 flex flex-col items-start gap-3">
         <p className="font-ui text-xs text-white">{subtitle}</p>
         <div

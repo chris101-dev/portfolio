@@ -9,14 +9,6 @@ import { RainbowShadowRuntime } from "./rainbow-shadow-runtime";
 export function LandingPage() {
   return (
     <div className="relative min-h-screen overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-0"
-      >
-        <div className="absolute left-[-10rem] top-24 h-80 w-80 bg-white/8 blur-3xl" />
-        <div className="absolute right-[-8rem] top-[-4rem] h-80 w-80 bg-white/8 blur-3xl" />
-      </div>
-
       <div className="relative z-10">
         <RainbowShadowRuntime />
         <NavigationBar />
@@ -29,7 +21,7 @@ export function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.5 }}
-            className="terminal-panel mx-auto w-[min(1120px,92%)] p-6 backdrop-blur"
+            className="mx-auto w-[min(1120px,92%)] p-6"
           >
             <p className="font-data text-xs tracking-[0.25em] text-emerald-300/90">
               about this portfolio
@@ -51,7 +43,7 @@ export function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.5 }}
-            className="terminal-panel mx-auto w-[min(1120px,92%)] p-6"
+            className="mx-auto w-[min(1120px,92%)] p-6"
           >
             <p className="font-data text-xs tracking-[0.3em] text-cyan-300/95">
               contact
