@@ -2,6 +2,44 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { navigationLinks } from "@/lib/navigation-links";
 
+type LenisLike = {
+  scrollTo: (
+    target: Element | string | number,
+    options?: { duration?: number; offset?: number; immediate?: boolean },
+  ) => void;
+};
+
+function handleSectionClick(
+  event: React.MouseEvent<HTMLAnchorElement>,
+  href: string,
+): void {
+  if (!href.startsWith("#")) {
+    return;
+  }
+
+  event.preventDefault();
+
+  const targetId = href.slice(1);
+  const target = document.getElementById(targetId);
+
+  if (!target) {
+    return;
+  }
+
+  const lenis = (window as Window & { __lenis?: LenisLike }).__lenis;
+  if (lenis) {
+    lenis.scrollTo(target, { duration: 1, offset: -16 });
+  } else {
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  window.history.replaceState(
+    null,
+    "",
+    `${window.location.pathname}${window.location.search}`,
+  );
+}
+
 export function NavigationBar() {
   return (
     <motion.header
@@ -25,6 +63,7 @@ export function NavigationBar() {
             <li key={link.href}>
               <Link
                 href={link.href}
+                onClick={(event) => handleSectionClick(event, link.href)}
                 className="transition-colors duration-200 hover:text-cyan-200"
               >
                 {link.label}
@@ -35,7 +74,8 @@ export function NavigationBar() {
 
         <Link
           href="#contact"
-          className="terminal-button terminal-button-green px-4 py-2 text-xs font-semibold uppercase tracking-widest"
+          onClick={(event) => handleSectionClick(event, "#contact")}
+          className="terminal-button terminal-button-green terminal-lift-button px-4 py-2 text-xs font-semibold uppercase tracking-widest"
         >
           Contact
         </Link>

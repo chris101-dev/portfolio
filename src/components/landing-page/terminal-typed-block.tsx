@@ -107,7 +107,18 @@ export function TerminalTypedBlock() {
 
     const animate = (now: number) => {
       const elapsed = Math.min(now - startedAt, TOTAL_TYPING_MS);
-      setTypedState(toTypedState(elapsed));
+      const nextState = toTypedState(elapsed);
+      setTypedState((previousState) => {
+        if (
+          previousState.headlineBaseLength === nextState.headlineBaseLength &&
+          previousState.headlineSuffixLength === nextState.headlineSuffixLength &&
+          previousState.summaryLength === nextState.summaryLength
+        ) {
+          return previousState;
+        }
+
+        return nextState;
+      });
 
       if (elapsed < TOTAL_TYPING_MS) {
         rafId = requestAnimationFrame(animate);

@@ -13,11 +13,20 @@ export type FreshnessRule = {
   maxPenalty: number;
 };
 
+export type TelemetryRule = {
+  healthyLatencyMs: number;
+  warnLatencyMs: number;
+  incidentLatencyMs: number;
+  chartMaxLatencyMs: number;
+  heartbeatWarnMs: number;
+};
+
 export type QualityScoringRules = {
   intervalSeconds: number;
   timelineSlotCount: number;
   rollingWindowSize: number;
   freshness: FreshnessRule;
+  telemetry: TelemetryRule;
   penalties: {
     missingIntervals: ScorePenaltyRule;
     duplicateTimestamps: ScorePenaltyRule;
@@ -26,7 +35,7 @@ export type QualityScoringRules = {
 };
 
 export const defaultQualityScoringRules: QualityScoringRules = {
-  intervalSeconds: 60,
+  intervalSeconds: 900,
   timelineSlotCount: 60,
   rollingWindowSize: 20,
   freshness: {
@@ -36,6 +45,13 @@ export const defaultQualityScoringRules: QualityScoringRules = {
     penaltyStepPoints: 3,
     basePenaltyPoints: 3,
     maxPenalty: 20,
+  },
+  telemetry: {
+    healthyLatencyMs: 200,
+    warnLatencyMs: 500,
+    incidentLatencyMs: 5000,
+    chartMaxLatencyMs: 5000,
+    heartbeatWarnMs: 1800,
   },
   penalties: {
     missingIntervals: {

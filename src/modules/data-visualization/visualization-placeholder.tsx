@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { DataQualityVisualizationProject } from "./data-quality-visualization-project";
 import { DummyVisualizationProject } from "./dummy-visualization-project";
 import { LiveCandlestickChart } from "./live-candlestick-chart";
@@ -16,11 +16,6 @@ export function VisualizationPlaceholder() {
   const [selectedProjectId, setSelectedProjectId] = useState(
     defaultVisualizationProjectId,
   );
-  const dynamicProjectShellRef = useRef<HTMLDivElement | null>(null);
-  const heightReleaseTimerRef = useRef<number | null>(null);
-  const [dynamicProjectShellHeight, setDynamicProjectShellHeight] = useState<
-    number | null
-  >(null);
 
   const activeProject = useMemo(() => {
     return (
@@ -37,45 +32,23 @@ export function VisualizationPlaceholder() {
     [activeProject.qualityRulePresetId],
   );
 
-  useLayoutEffect(() => {
-    if (dynamicProjectShellHeight === null || !dynamicProjectShellRef.current) {
-      return;
-    }
+  const liveProjectId = useMemo(() => {
+    return (
+      visualizationProjects.find((project) => project.type === "live")?.id ??
+      defaultVisualizationProjectId
+    );
+  }, []);
 
-    const shellElement = dynamicProjectShellRef.current;
-    const rafId = requestAnimationFrame(() => {
-      setDynamicProjectShellHeight(shellElement.scrollHeight);
-    });
-
-    if (heightReleaseTimerRef.current !== null) {
-      window.clearTimeout(heightReleaseTimerRef.current);
-    }
-
-    heightReleaseTimerRef.current = window.setTimeout(() => {
-      setDynamicProjectShellHeight(null);
-      heightReleaseTimerRef.current = null;
-    }, 1000);
-
-    return () => cancelAnimationFrame(rafId);
-  }, [activeProject.id, dynamicProjectShellHeight]);
-
-  useEffect(() => {
-    return () => {
-      if (heightReleaseTimerRef.current !== null) {
-        window.clearTimeout(heightReleaseTimerRef.current);
-      }
-    };
+  const qualityProjectId = useMemo(() => {
+    return (
+      visualizationProjects.find((project) => project.type === "quality")?.id ??
+      defaultVisualizationProjectId
+    );
   }, []);
 
   const handleProjectSwitch = (projectId: string) => {
     if (projectId === activeProject.id) {
       return;
-    }
-
-    if (dynamicProjectShellRef.current) {
-      setDynamicProjectShellHeight(
-        dynamicProjectShellRef.current.getBoundingClientRect().height,
-      );
     }
 
     setSelectedProjectId(projectId);
@@ -88,31 +61,30 @@ export function VisualizationPlaceholder() {
     >
       <div className="space-y-4 p-5">
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <div className="terminal-panel-soft terminal-panel-outer-triple-shadow terminal-sequence-row h-full p-5">
-            <label
-              htmlFor="visualization-project-select"
-              className="font-data block text-[10px] tracking-[0.22em]"
+          <div className="grid h-full grid-cols-1 gap-4 sm:grid-cols-2">
+            <button
+              type="button"
+              aria-pressed={activeProject.id === liveProjectId}
+              onClick={() => handleProjectSwitch(liveProjectId)}
+              className="terminal-panel-soft terminal-panel-outer-triple-shadow terminal-sequence-row terminal-lift-button font-ui h-full min-h-[120px] p-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/40"
             >
-              Project Selection
-            </label>
+              <span className="block text-sm font-semibold sm:text-base">
+                Binance Live Data
+              </span>
+              <span className="mt-1 block text-xs opacity-85">15m Interval</span>
+            </button>
 
-            <div className="relative mt-3">
-              <select
-                id="visualization-project-select"
-                value={activeProject.id}
-                onChange={(event) => handleProjectSwitch(event.target.value)}
-                className="terminal-select terminal-button terminal-button-static font-ui h-12 w-full appearance-none bg-black/70 px-4 pr-12 text-xs font-semibold"
-              >
-                {visualizationProjects.map((project) => {
-                  const optionText = `${project.label} - ${project.status}`;
-                  return (
-                    <option key={project.id} value={project.id}>
-                      {optionText}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
+            <button
+              type="button"
+              aria-pressed={activeProject.id === qualityProjectId}
+              onClick={() => handleProjectSwitch(qualityProjectId)}
+              className="terminal-panel-soft terminal-panel-outer-triple-shadow terminal-sequence-row terminal-lift-button font-ui h-full min-h-[120px] p-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/40"
+            >
+              <span className="block text-sm font-semibold sm:text-base">
+                Data Quality
+              </span>
+              <span className="mt-1 block text-xs opacity-85">Quality Monitoring</span>
+            </button>
           </div>
 
           <div className="terminal-panel-soft terminal-panel-outer-triple-shadow terminal-sequence-row flex h-full flex-col items-start gap-3 p-5">
@@ -131,18 +103,7 @@ export function VisualizationPlaceholder() {
         </div>
 
         {/* Shared feed stays mounted so project switches reuse the same websocket data. */}
-        <div
-          ref={dynamicProjectShellRef}
-          className="transition-[height] duration-[1000ms] ease-out [overflow-anchor:none] motion-reduce:transition-none"
-          style={
-            dynamicProjectShellHeight === null
-              ? undefined
-              : {
-                  height: `${dynamicProjectShellHeight}px`,
-                  overflow: "hidden",
-                }
-          }
-        >
+        <div className="[overflow-anchor:none]">
           {activeProject.type === "live" ? (
             <LiveCandlestickChart
               key={activeProject.id}
@@ -152,6 +113,7 @@ export function VisualizationPlaceholder() {
               errorText={binanceFeed.errorText}
               lastPrice={binanceFeed.lastPrice}
               candles={binanceFeed.candles}
+              secondaryCandles={binanceFeed.secondaryCandles}
             />
           ) : activeProject.type === "quality" ? (
             <DataQualityVisualizationProject
@@ -160,6 +122,7 @@ export function VisualizationPlaceholder() {
               interval={binanceFeed.interval}
               feedState={binanceFeed.feedState}
               candles={binanceFeed.candles}
+              telemetry={binanceFeed.telemetry}
               rules={activeQualityRules}
             />
           ) : (

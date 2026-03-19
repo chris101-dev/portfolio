@@ -2,13 +2,19 @@
 
 import { useMemo } from "react";
 import type { QualityScoringRules } from "./quality-rules";
-import type { CandlePoint, FeedState } from "./use-binance-kline-feed";
+import {
+  BINANCE_INITIAL_LIMIT,
+  type CandlePoint,
+  type FeedTelemetry,
+  type FeedState,
+} from "./use-binance-kline-feed";
 
 type DataQualityVisualizationProjectProps = {
   symbol: string;
   interval: string;
   feedState: FeedState;
   candles: CandlePoint[];
+  telemetry: FeedTelemetry;
   rules: QualityScoringRules;
 };
 
@@ -43,7 +49,7 @@ type QualityWindow = {
 
 type QualityMetrics = {
   sampleSize: number;
-  freshnessSeconds: number | null;
+  freshnessLagMs: number | null;
   missingIntervals: number;
   duplicateTimestamps: number;
   invalidOhlcRows: number;
@@ -53,18 +59,26 @@ type QualityMetrics = {
   timeline: QualityTimelinePoint[];
 };
 
-function formatElapsed(seconds: number | null): string {
-  if (seconds === null || Number.isNaN(seconds)) {
+const EXPECTED_SAMPLE_SIZE = BINANCE_INITIAL_LIMIT;
+
+function formatMilliseconds(value: number | null): string {
+  if (value === null || Number.isNaN(value)) {
     return "--";
   }
 
-  if (seconds < 60) {
-    return `${seconds}s`;
+  return `${Math.round(value)}ms`;
+}
+
+function formatHeartbeat(value: number | null): string {
+  if (value === null || Number.isNaN(value)) {
+    return "--";
   }
 
-  const minutes = Math.floor(seconds / 60);
-  const rest = seconds % 60;
-  return `${minutes}m ${rest}s`;
+  if (value < 1000) {
+    return `${Math.round(value)}ms`;
+  }
+
+  return `${(value / 1000).toFixed(2)}s`;
 }
 
 function clampScore(value: number): number {
@@ -182,18 +196,18 @@ function evaluateQualityWindow(
 }
 
 function freshnessSeverity(
-  freshnessSeconds: number | null,
+  freshnessLagMs: number | null,
   rules: QualityScoringRules,
 ): SeverityLevel {
-  if (freshnessSeconds === null) {
+  if (freshnessLagMs === null) {
     return "error";
   }
 
-  if (freshnessSeconds <= rules.freshness.passLimitSeconds) {
+  if (freshnessLagMs <= rules.freshness.passLimitSeconds * 1000) {
     return "info";
   }
 
-  if (freshnessSeconds <= rules.freshness.warnLimitSeconds) {
+  if (freshnessLagMs <= rules.freshness.warnLimitSeconds * 1000) {
     return "warn";
   }
 
@@ -222,12 +236,13 @@ function formatIntervalLabel(intervalSeconds: number): string {
 
 function evaluateQuality(
   candles: CandlePoint[],
+  freshnessLagMsSource: number | null,
   rules: QualityScoringRules,
 ): QualityMetrics {
   if (candles.length === 0) {
     return {
       sampleSize: 0,
-      freshnessSeconds: null,
+      freshnessLagMs: null,
       missingIntervals: 0,
       duplicateTimestamps: 0,
       invalidOhlcRows: 0,
@@ -254,15 +269,22 @@ function evaluateQuality(
   }
 
   const sorted = [...candles].sort((a, b) => a.time - b.time);
-  const nowSeconds = Math.floor(Date.now() / 1000);
-  const freshnessSeconds = Math.max(
-    0,
-    nowSeconds - Number(sorted[sorted.length - 1].time),
+  const freshnessLagMs =
+    freshnessLagMsSource === null
+      ? null
+      : Math.max(0, freshnessLagMsSource);
+  const freshnessSecondsForScore =
+    freshnessLagMs === null
+      ? rules.freshness.warnLimitSeconds + rules.freshness.penaltyStepSeconds
+      : freshnessLagMs / 1000;
+
+  const overallWindow = evaluateQualityWindow(
+    sorted,
+    freshnessSecondsForScore,
+    rules,
   );
 
-  const overallWindow = evaluateQualityWindow(sorted, freshnessSeconds, rules);
-
-  const freshnessLevel = freshnessSeverity(freshnessSeconds, rules);
+  const freshnessLevel = freshnessSeverity(freshnessLagMs, rules);
   const duplicateLevel = countSeverity(
     overallWindow.duplicateTimestamps,
     rules.penalties.duplicateTimestamps.warnUpperBound,
@@ -280,8 +302,10 @@ function evaluateQuality(
     {
       id: "freshness",
       label: `Freshness <= ${rules.freshness.passLimitSeconds}s`,
-      passed: freshnessSeconds <= rules.freshness.passLimitSeconds,
-      detail: `Current lag: ${formatElapsed(freshnessSeconds)}`,
+      passed:
+        freshnessLagMs !== null &&
+        freshnessLagMs <= rules.freshness.passLimitSeconds * 1000,
+      detail: `Current lag: ${formatMilliseconds(freshnessLagMs)}`,
       severity: freshnessLevel,
     },
     {
@@ -316,6 +340,15 @@ function evaluateQuality(
       severity: check.severity,
     }));
 
+  if (sorted.length !== EXPECTED_SAMPLE_SIZE) {
+    incidents.unshift({
+      id: "sample-size-window",
+      title: "Rolling sample window mismatch",
+      detail: `Sample size ${sorted.length} detected, expected ${EXPECTED_SAMPLE_SIZE}.`,
+      severity: "warn",
+    });
+  }
+
   const timeline: QualityTimelinePoint[] = sorted.map((_, index) => {
     const rollingWindowSize = Math.max(1, rules.rollingWindowSize);
     const startIndex = Math.max(0, index - rollingWindowSize + 1);
@@ -330,7 +363,7 @@ function evaluateQuality(
 
   return {
     sampleSize: sorted.length,
-    freshnessSeconds,
+    freshnessLagMs,
     missingIntervals: overallWindow.missingIntervals,
     duplicateTimestamps: overallWindow.duplicateTimestamps,
     invalidOhlcRows: overallWindow.invalidOhlcRows,
@@ -357,15 +390,31 @@ function feedStateLabel(state: FeedState): string {
 }
 
 function qualityScoreColor(score: number): string {
-  if (score >= 90) {
+  if (score === 100) {
     return "text-emerald-300";
   }
 
-  if (score >= 70) {
+  if (score < 90) {
+    return "text-rose-300";
+  }
+
+  if (score < 100) {
     return "text-amber-300";
   }
 
-  return "text-rose-300";
+  return "text-emerald-300";
+}
+
+function qualityScoreDotClass(score: number): string {
+  if (score === 100) {
+    return "bg-emerald-300 shadow-[0_0_8px_rgba(110,231,183,0.75)]";
+  }
+
+  if (score < 90) {
+    return "bg-rose-300 shadow-[0_0_8px_rgba(251,113,133,0.8)]";
+  }
+
+  return "bg-amber-300 shadow-[0_0_8px_rgba(252,211,77,0.75)]";
 }
 
 function severityBadgeClass(severity: SeverityLevel): string {
@@ -378,6 +427,95 @@ function severityBadgeClass(severity: SeverityLevel): string {
   }
 
   return "border-white bg-rose-300/10 text-rose-200";
+}
+
+function latencySeverity(
+  latencyMs: number | null,
+  rules: QualityScoringRules,
+): SeverityLevel {
+  if (latencyMs === null) {
+    return "error";
+  }
+
+  if (latencyMs <= rules.telemetry.healthyLatencyMs) {
+    return "info";
+  }
+
+  if (latencyMs <= rules.telemetry.warnLatencyMs) {
+    return "warn";
+  }
+
+  return "error";
+}
+
+function latencyDotClass(
+  latencyMs: number | null,
+  rules: QualityScoringRules,
+): string {
+  const severity = latencySeverity(latencyMs, rules);
+
+  if (severity === "info") {
+    return "bg-emerald-300 shadow-[0_0_8px_rgba(110,231,183,0.75)]";
+  }
+
+  if (severity === "warn") {
+    return "bg-amber-300 shadow-[0_0_8px_rgba(252,211,77,0.75)]";
+  }
+
+  return "bg-rose-300 shadow-[0_0_8px_rgba(251,113,133,0.8)]";
+}
+
+function latencyTimelineBarClass(
+  latencyMs: number | null,
+  rules: QualityScoringRules,
+): string {
+  if (latencyMs === null) {
+    return "bg-white/25";
+  }
+
+  if (latencyMs <= rules.telemetry.healthyLatencyMs) {
+    return "bg-emerald-300/90";
+  }
+
+  if (latencyMs <= rules.telemetry.warnLatencyMs) {
+    return "bg-amber-300/90";
+  }
+
+  return "bg-rose-300/90";
+}
+
+function latencyTimelineBarHeight(
+  latencyMs: number | null,
+  axisMaxLatencyMs: number,
+): string {
+  if (latencyMs === null) {
+    return "8%";
+  }
+
+  const normalized = Math.min(latencyMs, axisMaxLatencyMs) / axisMaxLatencyMs;
+  return `${Math.max(8, Math.round(normalized * 100))}%`;
+}
+
+function calculateLatencyAxisMax(
+  values: Array<number | null>,
+  fallbackMaxMs: number,
+): number {
+  const validValues = values.filter(
+    (value): value is number => value !== null && Number.isFinite(value),
+  );
+
+  if (validValues.length === 0) {
+    return Math.max(1, fallbackMaxMs);
+  }
+
+  const observedMax = Math.max(...validValues);
+  if (observedMax <= 0) {
+    return 10;
+  }
+
+  const paddedMax = observedMax * 1.2;
+  const roundingStep = paddedMax <= 100 ? 5 : paddedMax <= 500 ? 10 : 50;
+  return Math.max(10, Math.ceil(paddedMax / roundingStep) * roundingStep);
 }
 
 function timelineBarClass(score: number | null): string {
@@ -411,14 +549,41 @@ function buildTimelineSlots(
   return slots;
 }
 
+function buildLatencyTimelineSlots(
+  values: Array<number | null>,
+  slotCount: number,
+): Array<number | null> {
+  const latest = values.slice(-slotCount);
+  const slots = new Array<number | null>(slotCount).fill(null);
+  const offset = slotCount - latest.length;
+
+  latest.forEach((value, index) => {
+    slots[offset + index] = value;
+  });
+
+  return slots;
+}
+
+function formatScore(value: number | null): string {
+  if (value === null || Number.isNaN(value)) {
+    return "--";
+  }
+
+  return `${Math.round(value)}`;
+}
+
 export function DataQualityVisualizationProject({
   symbol,
   interval,
   feedState,
   candles,
+  telemetry,
   rules,
 }: DataQualityVisualizationProjectProps) {
-  const metrics = useMemo(() => evaluateQuality(candles, rules), [candles, rules]);
+  const metrics = useMemo(
+    () => evaluateQuality(candles, telemetry.lastAggTradeInterArrivalMs, rules),
+    [candles, telemetry.lastAggTradeInterArrivalMs, rules],
+  );
 
   const timelineSlotCount = Math.max(1, rules.timelineSlotCount);
 
@@ -432,6 +597,99 @@ export function DataQualityVisualizationProject({
     [timelineSlots],
   );
 
+  const oldestTimelineScore = useMemo(() => {
+    for (const score of timelineSlots) {
+      if (score !== null) {
+        return score;
+      }
+    }
+
+    return null;
+  }, [timelineSlots]);
+
+  const latestTimelineScore = useMemo(() => {
+    for (let index = timelineSlots.length - 1; index >= 0; index -= 1) {
+      const score = timelineSlots[index];
+      if (score !== null) {
+        return score;
+      }
+    }
+
+    return null;
+  }, [timelineSlots]);
+
+  const latencySeries = useMemo(
+    () => telemetry.timeline.map((point) => point.ingestionLatencyMs),
+    [telemetry.timeline],
+  );
+
+  const latencyTimelineSlots = useMemo(
+    () => buildLatencyTimelineSlots(latencySeries, timelineSlotCount),
+    [latencySeries, timelineSlotCount],
+  );
+
+  const filledLatencySlotCount = useMemo(
+    () => latencyTimelineSlots.filter((latency) => latency !== null).length,
+    [latencyTimelineSlots],
+  );
+
+  const latestLatency = telemetry.lastIngestionLatencyMs;
+  const avgLatency = telemetry.averageIngestionLatencyMs;
+  const maxLatency = telemetry.maxIngestionLatencyMs;
+  const klineFreshness = telemetry.lastKlineInterArrivalMs;
+  const aggTradeFreshness = telemetry.lastAggTradeInterArrivalMs;
+  const heartbeatOneMinuteAvg = telemetry.oneMinuteAggTradeInterArrivalMs;
+
+  const latencyAxisMaxMs = useMemo(
+    () =>
+      calculateLatencyAxisMax(
+        latencyTimelineSlots,
+        rules.telemetry.chartMaxLatencyMs,
+      ),
+    [latencyTimelineSlots, rules.telemetry.chartMaxLatencyMs],
+  );
+
+  const streamAgeMs = useMemo(() => {
+    if (telemetry.lastArrivalTimestampMs === null) {
+      return null;
+    }
+
+    return Math.max(0, Date.now() - telemetry.lastArrivalTimestampMs);
+  }, [telemetry.lastArrivalTimestampMs]);
+
+  const heartbeatLevel = useMemo(() => {
+    if (heartbeatOneMinuteAvg === null) {
+      return "--";
+    }
+
+    return heartbeatOneMinuteAvg > rules.telemetry.heartbeatWarnMs
+      ? "degraded"
+      : "stable";
+  }, [heartbeatOneMinuteAvg, rules.telemetry.heartbeatWarnMs]);
+
+  const latencyIncident = useMemo(() => {
+    if (latestLatency === null || latestLatency <= rules.telemetry.incidentLatencyMs) {
+      return null;
+    }
+
+    return {
+      id: "ingestion-latency-spike",
+      title: "Ingestion latency spike detected",
+      detail: `Current transport latency ${formatMilliseconds(latestLatency)} exceeds ${formatMilliseconds(
+        rules.telemetry.incidentLatencyMs,
+      )}.`,
+      severity: "error" as const,
+    };
+  }, [latestLatency, rules.telemetry.incidentLatencyMs]);
+
+  const mergedIncidents = useMemo(() => {
+    if (!latencyIncident) {
+      return metrics.incidents;
+    }
+
+    return [latencyIncident, ...metrics.incidents];
+  }, [latencyIncident, metrics.incidents]);
+
   return (
     <div className="terminal-panel-soft terminal-panel-outer-triple-shadow p-5">
       <div className="mb-4 flex flex-col items-start gap-3">
@@ -443,11 +701,19 @@ export function DataQualityVisualizationProject({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <article className="terminal-panel-soft p-4">
-          <p className="font-data text-[10px] tracking-wider text-white">quality score</p>
+          <div className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className={`h-2.5 w-2.5 rounded-full ${qualityScoreDotClass(
+                metrics.qualityScore,
+              )}`}
+            />
+            <p className="font-data text-[10px] tracking-wider text-white">quality score</p>
+          </div>
           <p
-            className={`mt-2 font-ui text-2xl font-semibold ${qualityScoreColor(
+            className={`mt-3 font-ui text-5xl font-semibold leading-none sm:text-6xl ${qualityScoreColor(
               metrics.qualityScore,
             )}`}
           >
@@ -456,24 +722,29 @@ export function DataQualityVisualizationProject({
         </article>
 
         <article className="terminal-panel-soft p-4">
-          <p className="font-data text-[10px] tracking-wider text-white">freshness lag</p>
+          <div className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className={`h-2.5 w-2.5 rounded-full ${latencyDotClass(
+                latestLatency,
+                rules,
+              )}`}
+            />
+            <p className="font-data text-[10px] tracking-wider text-white">
+              Latency
+            </p>
+          </div>
           <p className="mt-2 font-ui text-2xl font-semibold text-white">
-            {formatElapsed(metrics.freshnessSeconds)}
+            {formatMilliseconds(latestLatency)}
           </p>
-        </article>
-
-        <article className="terminal-panel-soft p-4">
-          <p className="font-data text-[10px] tracking-wider text-white">missing intervals</p>
-          <p className="mt-2 font-ui text-2xl font-semibold text-white">
-            {metrics.missingIntervals}
-          </p>
-        </article>
-
-        <article className="terminal-panel-soft p-4">
-          <p className="font-data text-[10px] tracking-wider text-white">sample size</p>
-          <p className="mt-2 font-ui text-2xl font-semibold text-white">
-            {metrics.sampleSize}
-          </p>
+          <div className="mt-2 space-y-1 text-[11px] text-white">
+            <p>Freshness (kline): {formatHeartbeat(klineFreshness)}</p>
+            <p>Freshness (aggTrade): {formatHeartbeat(aggTradeFreshness)}</p>
+            <p>
+              Market heartbeat (1m): {formatHeartbeat(heartbeatOneMinuteAvg)} avg ({heartbeatLevel})
+            </p>
+            <p>Last packet age: {formatHeartbeat(streamAgeMs)}</p>
+          </div>
         </article>
       </div>
 
@@ -482,7 +753,7 @@ export function DataQualityVisualizationProject({
           Rolling Quality Score Timeline
         </p>
 
-        <div className="mt-3 border border-white bg-black/70 p-2">
+        <div className="relative mt-4 border border-white bg-black/70 p-2">
           <div
             className="grid h-24 items-end gap-px"
             style={{
@@ -497,53 +768,85 @@ export function DataQualityVisualizationProject({
               />
             ))}
           </div>
+
+          <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-[120%]">
+            <span className="border border-current bg-black px-2 py-0.5 font-data text-[8px] tracking-[0.12em] text-[color:var(--terminal-rainbow-color)]">
+              100
+            </span>
+          </div>
+
+          <div className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-[120%]">
+            <span className="border border-current bg-black px-2 py-0.5 font-data text-[8px] tracking-[0.12em] text-[color:var(--terminal-rainbow-color)]">
+              0
+            </span>
+          </div>
         </div>
 
-        <div className="mt-2 flex flex-col items-start gap-1 text-[10px] text-white">
-          <span>Oldest</span>
+        <div className="mt-8 flex flex-col items-start gap-1 text-[10px] text-white">
+          <span>Oldest: {formatScore(oldestTimelineScore)}</span>
           <span>
-            Filled: {filledTimelineSlotCount}/{timelineSlotCount} | Window: {rules.rollingWindowSize}
+            Filled: {filledTimelineSlotCount}/{timelineSlotCount} | Window: {rules.rollingWindowSize} candles
           </span>
-          <span>Latest</span>
+          <span>Latest: {formatScore(latestTimelineScore)}</span>
+        </div>
+      </article>
+
+      <article className="terminal-panel-soft mt-4 p-4">
+        <p className="font-data text-[10px] tracking-wider text-cyan-300/90">
+          Ingestion Latency Timeline
+        </p>
+
+        <div className="relative mt-4 border border-white bg-black/70 p-2">
+          <div
+            className="grid h-24 items-end gap-px"
+            style={{
+              gridTemplateColumns: `repeat(${timelineSlotCount}, minmax(0, 1fr))`,
+            }}
+          >
+            {latencyTimelineSlots.map((latencyMs, index) => (
+              <div
+                key={`latency-timeline-slot-${index}`}
+                className={`${latencyTimelineBarClass(latencyMs, rules)} w-full`}
+                style={{ height: latencyTimelineBarHeight(latencyMs, latencyAxisMaxMs) }}
+              />
+            ))}
+          </div>
+
+          <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-[120%]">
+            <span className="border border-current bg-black px-2 py-0.5 font-data text-[8px] tracking-[0.12em] text-[color:var(--terminal-rainbow-color)]">
+              {Math.round(latencyAxisMaxMs)}ms
+            </span>
+          </div>
+
+          <div className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-[120%]">
+            <span className="border border-current bg-black px-2 py-0.5 font-data text-[8px] tracking-[0.12em] text-[color:var(--terminal-rainbow-color)]">
+              0ms
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-8 flex flex-col items-start gap-1 text-[10px] text-white">
+          <span>
+            Filled: {filledLatencySlotCount}/{timelineSlotCount} | Thresholds: &lt;=
+            {rules.telemetry.healthyLatencyMs}ms ok / &lt;={rules.telemetry.warnLatencyMs}ms warn
+          </span>
+          <span>
+            Last: {formatMilliseconds(latestLatency)} | Avg: {formatMilliseconds(avgLatency)} |
+            Peak: {formatMilliseconds(maxLatency)}
+          </span>
         </div>
       </article>
 
       <div className="mt-4 grid gap-3">
         <article className="terminal-panel-soft p-4">
-          <p className="font-data text-[10px] tracking-wider text-cyan-300/90">Check Matrix</p>
-          <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
-            {metrics.checks.map((check) => (
-              <li
-                key={check.id}
-                className="terminal-panel-soft flex flex-col items-start gap-3 p-3"
-              >
-                <div>
-                  <p className="font-ui text-xs text-white">{check.label}</p>
-                  <p className="mt-1 text-[11px] text-white">{check.detail}</p>
-                </div>
-                <span
-                  className={`terminal-chip px-2 py-1 text-[10px] font-semibold ${
-                    check.passed
-                      ? "bg-emerald-300/10 text-emerald-200"
-                      : severityBadgeClass(check.severity)
-                  }`}
-                >
-                  {check.passed ? "PASS" : check.severity.toUpperCase()}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </article>
-
-        <article className="terminal-panel-soft p-4">
           <p className="font-data text-[10px] tracking-wider text-cyan-300/90">
             Recent Incidents
           </p>
-          {metrics.incidents.length === 0 ? (
+          {mergedIncidents.length === 0 ? (
             <p className="mt-3 text-xs text-emerald-200">No quality incidents detected.</p>
           ) : (
             <ul className="mt-3 space-y-2">
-              {metrics.incidents.slice(0, 6).map((incident) => (
+              {mergedIncidents.slice(0, 6).map((incident) => (
                 <li
                   key={incident.id}
                   className="terminal-panel-soft flex flex-col items-start gap-3 p-3 text-[11px]"

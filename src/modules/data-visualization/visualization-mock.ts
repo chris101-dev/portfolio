@@ -22,20 +22,25 @@ export const visualizationProjects: VisualizationProject[] = [
     id: "btc-usdc-live",
     label: "Binance Live",
     title: "Binance BTCUSDC Candlestick Feed",
-    status: "1m Interval",
+    status: "15m Interval",
     type: "live",
-    summary: "Streams real-time Binance klines with a fixed 60-candle window.",
+    summary:
+      "Streams real-time 15m Binance klines with a fixed 200-candle viewport and EMA features.",
     pipelineStages: [
-      { id: "source", label: "source", value: "WebSocket + REST API" },
+      {
+        id: "source",
+        label: "source",
+        value: "REST seed (400 candles) + multiplex WebSocket stream (kline_15m + aggTrade)",
+      },
       {
         id: "processing",
         label: "processing",
-        value: "Normalization + OHLC mapping for Lightweight Charts",
+        value: "Dual rolling buffers (200 visible + 200 hidden), EMA50/EMA100/EMA200 feature engineering, plus CSV levels derived from 1,922 15m candles via a custom touch algorithm",
       },
       {
         id: "output",
         label: "output",
-        value: "TradingView Lightweight Charts",
+        value: "TradingView candlesticks with EMA overlays and fixed 200-candle viewport",
       },
     ],
   },
@@ -47,22 +52,22 @@ export const visualizationProjects: VisualizationProject[] = [
     type: "quality",
     qualityRulePresetId: "default",
     summary:
-      "Profiles feed reliability with freshness, null-rate, duplicate, and range checks.",
+      "Profiles feed reliability with aggTrade heartbeat intervals, latency, and OHLC integrity checks.",
     pipelineStages: [
       {
         id: "source",
         label: "source",
-        value: "Binance REST seed + WebSocket stream",
+        value: "REST kline seed + multiplex WebSocket stream (kline_15m + aggTrade)",
       },
       {
         id: "processing",
         label: "processing",
-        value: "Freshness, null-rate, duplicate-key, and OHLC range checks",
+        value: "aggTrade inter-arrival heartbeat + kline transport latency + quality scoring and OHLC integrity checks",
       },
       {
         id: "output",
         label: "output",
-        value: "Quality score timeline + anomaly flags",
+        value: "Quality and latency timelines with incidents for heartbeat degradation, stale packets, and structural gaps",
       },
     ],
   },

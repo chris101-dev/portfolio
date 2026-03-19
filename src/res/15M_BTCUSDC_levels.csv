@@ -1,0 +1,5 @@
+range_low,range_high,center,tests_total,tests_from_above,tests_from_below,wick_touches,upper_edge_wicks,lower_edge_wicks,body_inside,body_cross,close_in_band,bullish_confirmations,bearish_confirmations,confirmations,wick_ratio,residence_ratio,transit_ratio,confirmation_ratio,zone_width_pct,two_sided,robustness,score,first_seen,last_seen,span_months,level_kind
+68694.78267707,69632.53623113,69163.6594541,377,212,165,55,12,11,84,0,107,154,123,277,0.15,0.22,0.0,0.73,1.36,True,high,726.36,2026-02-28,2026-03-19,2,weekly_refined
+71853.49988555,72865.90238838,72359.70113697,344,122,222,38,4,5,73,0,82,73,185,258,0.11,0.21,0.0,0.75,1.4,True,high,706.61,2026-03-04,2026-03-19,1,weekly_refined
+64465.36350822,65365.62149178,64915.4925,111,92,19,23,5,0,16,0,21,75,14,89,0.21,0.14,0.0,0.8,1.39,True,high,290.64,2026-02-27,2026-03-09,2,weekly_refined
+54076.519276,54992.700724,54534.61,0,0,0,0,0,0,0,0,0,0,0,0,0.0,0.0,0.0,0.0,1.68,False,medium,3.0,2026-02-27,2026-03-19,2,daily_below_reference

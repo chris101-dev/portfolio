@@ -25,9 +25,11 @@ The landing page should communicate engineering quality, data platform expertise
   - page.tsx
 - src/components/landing-page
   - landing-page.tsx
+  - dev-fps-overlay.tsx
   - navigation-bar.tsx
   - hero-section.tsx
   - rainbow-shadow-runtime.tsx
+  - smooth-scroll-runtime.tsx
   - terminal-typed-block.tsx
 - src/modules/data-visualization
   - data-quality-visualization-project.tsx
@@ -44,6 +46,10 @@ The landing page should communicate engineering quality, data platform expertise
 ## Module Responsibilities
 - src/components/landing-page/navigation-bar.tsx
   - Top navigation with section anchors and contact CTA.
+- src/components/landing-page/smooth-scroll-runtime.tsx
+  - Provides global smooth scrolling behavior and adaptive low-FPS fallback toggles.
+- src/components/landing-page/dev-fps-overlay.tsx
+  - Development-only FPS overlay for runtime rendering diagnostics.
 - src/components/landing-page/hero-section.tsx
   - Headline, value proposition, skill tags, KPIs, and hero CTAs.
 - src/components/landing-page/terminal-typed-block.tsx
@@ -53,17 +59,22 @@ The landing page should communicate engineering quality, data platform expertise
   - Applies block-local border, shadow, and text coloring without cross-block coupling.
 - src/modules/data-visualization/visualization-placeholder.tsx
   - Visualization shell and layout block shown in the hero.
-  - Hosts project dropdown, URL-based project selection, and supporting stage cards.
+  - Hosts project button selector, URL-based project selection, and supporting stage cards.
 - src/modules/data-visualization/use-binance-kline-feed.ts
   - Shared Binance feed hook used by multiple visualization projects.
-  - Loads initial candles and streams kline updates via WebSocket.
+  - Loads 400 initial candles from REST and streams multiplex WebSocket updates (`kline_15m` + `aggTrade`).
+  - Maintains dual rolling buffers (200 visible + 200 hidden feature context).
+  - Computes kline ingestion latency and aggTrade inter-arrival heartbeat telemetry.
 - src/modules/data-visualization/live-candlestick-chart.tsx
   - Renders TradingView Lightweight Charts candlesticks.
   - Visualizes live project data from the shared Binance feed.
+  - Derives EMA50, EMA100, and EMA200 overlays from combined 400-candle context.
+  - Loads CSV-derived support/resistance levels and renders center lines plus clipped semi-transparent zones.
 - src/modules/data-visualization/data-quality-visualization-project.tsx
   - Computes and visualizes freshness, gap, duplicate, and OHLC validity checks.
+  - Derives heartbeat/freshness interval telemetry from aggTrade update cadence.
   - Applies configurable quality thresholds from a shared rules module.
-  - Uses the same shared Binance feed as the live chart project.
+  - Uses the shared 200-candle primary buffer from the Binance feed.
 - src/modules/data-visualization/quality-rules.ts
   - Defines configurable quality thresholds, score penalties, and timeline settings.
   - Exposes default presets used by quality-focused visualization projects.
@@ -73,6 +84,7 @@ The landing page should communicate engineering quality, data platform expertise
   - Central project registry with labels, status, summaries, and stage metadata.
   - Includes one live project, one quality project, and placeholder entries for upcoming projects.
   - Holds per-project quality rule preset mappings.
+  - Keep `source`, `processing`, and `output` stage text aligned with implemented project behavior.
   - Keep sample data separated from rendering logic for easy replacement.
 - src/lib/pastel-rainbow-colors.ts
   - Stores reusable pastel rainbow color constants for runtime block styling.
@@ -94,6 +106,7 @@ The landing page should communicate engineering quality, data platform expertise
 - Prefer composition over large monolithic files.
 - Avoid inline magic values when shared constants make sense.
 - Keep comments concise and only where logic is non-obvious.
+- Keep explanatory stage panels (`source`, `processing`, `output`) synchronized with actual project behavior whenever pipelines change.
 - Run lint before finishing meaningful changes.
 
 ## Performance and Accessibility
@@ -115,6 +128,7 @@ Update this file whenever one of the following changes:
 - Design, accessibility, or motion rules are adjusted.
 - New dependencies or runtime requirements are introduced.
 - Naming conventions or coding standards change.
+- Visualization data source, processing, telemetry, or output behavior changes.
 
 When updating this file:
 1. Update the structure section first.
